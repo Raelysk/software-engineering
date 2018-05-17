@@ -62,7 +62,8 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 		case VirtualKey('O'):
 		{
 			wchar filename[260];
-			OpenFileDialog(getHandle(), filename, countof(filename));
+			if (!OpenFileDialog(getHandle(), filename, countof(filename)))
+				break;
 
 			HeapPtr<byte> imageData;
 			uint32 width = 0, height = 0;
@@ -74,6 +75,18 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 			rectu32 dstRegion(0, 0, dstWidth, dstHeight);
 
 			canvasManager.uploadLayerRegion(0, dstRegion, imageData, width * 4);
+
+			break;
+		}
+
+		case VirtualKey('F'):
+		{
+			BrightnessContrastGammaFilterSettings settings;
+			settings.brightness = 0.0f;
+			settings.contrast = 1.0f;
+			settings.gamma = 5.0f;
+
+			canvasManager.brightnessContrastGammaFilter(true, settings);
 
 			break;
 		}

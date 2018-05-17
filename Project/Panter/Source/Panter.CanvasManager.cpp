@@ -219,7 +219,10 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 	// canvas
 	for (uint16 i = 0; i < layerCount; i++)
 	{
-		device->setTexture(layerTextures[i]);
+		if (i == 0 && filterPreview)
+			device->setTexture(tempTexture);
+		else
+			device->setTexture(layerTextures[i]);
 		device->draw2D(PrimitiveType::TriangleList, Effect::TexturedUnorm,
 			quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
 	}
@@ -273,9 +276,33 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 
 // Filters ======================================================================================//
 
-void brightnessContrastGammaFilter(bool preview, const BrightnessContrastGammaFilterSettings& settings)
+void CanvasManager::brightnessContrastGammaFilter(bool preview, const BrightnessContrastGammaFilterSettings& settings)
 {
+	{
+		float32x2 canvasSizeF(canvasSize);
 
+		VertexTexturedUnorm2D vertices[6];
+		vertices[0] = { { 0.0f,          0.0f          }, { 0,      0      } };
+		vertices[1] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
+		vertices[2] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
+		vertices[3] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
+		vertices[4] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
+		vertices[5] = { { canvasSizeF.x, canvasSizeF.y }, { 0xFFFF, 0xFFFF } };
+
+		device->updateBuffer(quadVertexBuffer, vertices, 0, sizeof(vertices));
+	}
+
+	device->setRenderTarget(tempTexture);
+	device->setViewport(rectu32(0, 0, canvasSize));
+	device->setScissorRect(selection);
+	device->setTransform2D(Matrix2x3::Identity());
+	device->setTexture(layerTextures[0]);
+	device->setCustomEffectConstants(settings);
+
+	device->draw2D(PrimitiveType::TriangleList, brightnessContrastGammaEffect,
+		quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
+
+	filterPreview = true;
 }
 
 // Canvas modification / controls handling ======================================================//
@@ -306,6 +333,10 @@ void CanvasManager::setPointerState(sint16x2 position, bool isActive)
 uint16 CanvasManager::createLayer(uint16 insertAtIndex)
 {
 	device->createTextureRenderTarget(layerTextures[layerCount], canvasSize.x, canvasSize.y);
+
+	if (!layerCount)
+		device->createTextureRenderTarget(tempTexture, canvasSize.x, canvasSize.y);
+
 	return layerCount++;
 }
 

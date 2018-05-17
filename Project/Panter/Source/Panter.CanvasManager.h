@@ -62,6 +62,7 @@ namespace Panter
 		//{
 		bool selectionInProgress = false;
 		uint32x2 selectionFirstCornerPosition = { 0, 0 };
+		bool filterPreview = false;
 		//} instrumentsData;
 
 		sint16x2 pointerPosition = { 0, 0 };
