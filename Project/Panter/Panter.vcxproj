@@ -188,6 +188,7 @@
     <ClCompile Include="Source\Panter.EntryPoint.cpp" />
     <ClCompile Include="Source\Panter.ImageLoader.cpp" />
     <ClCompile Include="Source\Panter.MainWindow.cpp" />
+    <ClCompile Include="Source\SystemUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Panter.CanvasManager.h" />
@@ -195,6 +196,7 @@
     <ClInclude Include="Source\Panter.ImageLoader.h" />
     <ClInclude Include="Source\Panter.MainWindow.h" />
     <ClInclude Include="Source\Panter.CanvasManager.EffectShaders.h" />
+    <ClInclude Include="Source\SystemUtil.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\XLib.Graphics\XLib.Graphics.vcxproj">

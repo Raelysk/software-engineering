@@ -113,6 +113,9 @@ namespace Panter
 		//void undo();
 		//void redo();
 
+		inline uint32x2 getCanvasSize() const { return canvasSize; }
+		inline uint32 getCanvasWidth() const { return canvasSize.x; }
+		inline uint32 getCanvasHeight() const { return canvasSize.y; }
 		inline float32 getCanvasScale() const { return canvasScale; }
 		inline bool isInitialized() const { return device != nullptr; }
 	};

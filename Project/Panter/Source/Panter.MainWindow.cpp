@@ -1,4 +1,8 @@
+#include "SystemUtil.h"
+
 #include "Panter.MainWindow.h"
+
+#include "Panter.ImageLoader.h"
 
 using namespace XLib;
 using namespace XLib::Graphics;
@@ -54,6 +58,25 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 		case VirtualKey('3'):
 			canvasManager.setColor(0x0000FF_rgb);
 			break;
+
+		case VirtualKey('O'):
+		{
+			wchar filename[260];
+			OpenFileDialog(getHandle(), filename, countof(filename));
+
+			HeapPtr<byte> imageData;
+			uint32 width = 0, height = 0;
+			ImageLoader::Load(filename, imageData, width, height);
+
+			uint32 dstWidth = min(width, canvasManager.getCanvasWidth());
+			uint32 dstHeight = min(height, canvasManager.getCanvasHeight());
+
+			rectu32 dstRegion(0, 0, dstWidth, dstHeight);
+
+			canvasManager.uploadLayerRegion(0, dstRegion, imageData, width * 4);
+
+			break;
+		}
 	}
 }
 

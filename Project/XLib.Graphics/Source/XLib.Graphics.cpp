@@ -152,6 +152,9 @@ void Device::updateBuffer(Buffer& buffer, const void* srcData, uint32 baseOffset
 void Device::updateTexture(Texture& texture, const rectu32& region,
     const void* srcData, uint32 srcDataStride)
 {
+	if (!srcDataStride)
+		srcDataStride = (region.right - region.left) * 4;
+
     d3dContext->UpdateSubresource(texture.d3dTexture, 0,
         &D3D11Box(region.left, region.right, region.top, region.bottom), srcData, srcDataStride, 0);
 }

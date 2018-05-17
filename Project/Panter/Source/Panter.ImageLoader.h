@@ -1,18 +1,13 @@
 #pragma once
 
 #include <XLib.Types.h>
-#include <XLib.NonCopyable.h>
-
-// TODO: imlement proper loader (disk worker, async, separate image info readers, etc)
+#include <XLib.Heap.h>
 
 namespace Panter
 {
-	class ImageLoader : public XLib::NonCopyable
+	class ImageLoader abstract final
 	{
-	private:
-
-
 	public:
-		static bool Load(const char* filename);
+		static bool Load(const wchar* filename, XLib::HeapPtr<byte>& data, uint32& width, uint32& height);
 	};
 }
