@@ -2,6 +2,7 @@
 #include <dxgi1_3.h>
 
 #include <XLib.Util.h>
+#include <XLib.Memory.h>
 #include <XLib.Platform.D3D11.Helpers.h>
 #include <XLib.Platform.DXGI.Helpers.h>
 
@@ -23,7 +24,7 @@ static_assert(
 
 COMPtr<IDXGIFactory3> Device::dxgiFactory;
 
-struct VSConstants
+struct TransformConstants
 {
     float32x4 tranfromRow0;
     float32x4 tranfromRow1;
@@ -88,7 +89,12 @@ bool Device::initialize()
             D3D11_BLEND_ONE, D3D11_BLEND_OP_ADD, D3D11_BLEND_ONE),
         d3dDefaultBlendState.initRef());
 
-	d3dDevice->CreateBuffer(&D3D11BufferDesc(sizeof(VSConstants), D3D11_BIND_CONSTANT_BUFFER), nullptr, d3dConstantBuffer.initRef());
+	d3dDevice->CreateBuffer(
+		&D3D11BufferDesc(sizeof(TransformConstants), D3D11_BIND_CONSTANT_BUFFER),
+		nullptr, d3dTransformConstantBuffer.initRef());
+	d3dDevice->CreateBuffer(
+		&D3D11BufferDesc(customEffectConstantsSizeLimit, D3D11_BIND_CONSTANT_BUFFER),
+		nullptr, d3dCustomEffectConstantBuffer.initRef());
 
     transform = Matrix2x3::Identity();
     transformUpToDate = false;
@@ -128,6 +134,13 @@ void Device::setTexture(Texture& texture, uint32 slot)
 {
     ID3D11ShaderResourceView *d3dSRVs[] = { texture.d3dSRV };
     d3dContext->PSSetShaderResources(0, 1, d3dSRVs);
+}
+
+void Device::setCustomEffectConstants(const void* data, uint32 size)
+{
+	Memory::Copy(customEffectConstantsBuffer, data, size);
+	d3dContext->UpdateSubresource(d3dCustomEffectConstantBuffer,
+		0, nullptr, customEffectConstantsBuffer, 0, 0);
 }
 
 void Device::updateBuffer(Buffer& buffer, const void* srcData, uint32 baseOffset, uint32 size)
@@ -176,10 +189,10 @@ void Device::draw2D(PrimitiveType primitiveType, Effect effect, Buffer& vertexBu
 	d3dContext->IASetInputLayout(d3dIL);
 	d3dContext->VSSetShader(d3dVS, nullptr, 0);
 	d3dContext->PSSetShader(d3dPS, nullptr, 0);
-	ID3D11Buffer *d3dVSCB = d3dConstantBuffer;
     if (d3dSS)
         d3dContext->PSSetSamplers(0, 1, &d3dSS);
 
+	ID3D11Buffer *d3dVSCB = d3dTransformConstantBuffer;
 	d3dContext->VSSetConstantBuffers(0, 1, &d3dVSCB);
 
     if (!transformUpToDate)
@@ -190,9 +203,10 @@ void Device::draw2D(PrimitiveType primitiveType, Effect effect, Buffer& vertexBu
             Matrix2x3::Scale(2.0f / viewport.getWidth(), 2.0f / viewport.getHeight()) *
             Matrix2x3::Translation(float32(viewport.left), float32(viewport.top));
 
-        VSConstants constants;
-        constants.set(ndcToScreenSpaceTransform * transform);
-        d3dContext->UpdateSubresource(d3dConstantBuffer, 0, nullptr, &constants, 0, 0);
+		TransformConstants transformConstants;
+		transformConstants.set(ndcToScreenSpaceTransform * transform);
+        d3dContext->UpdateSubresource(d3dTransformConstantBuffer,
+			0, nullptr, &transformConstants, 0, 0);
 
         transformUpToDate = true;
     }
@@ -212,6 +226,80 @@ void Device::draw2D(PrimitiveType primitiveType, Effect effect, Buffer& vertexBu
     }
 
 	d3dContext->Draw(vertexCount, 0);
+}
+
+void Device::draw2D(PrimitiveType primitiveType, CustomEffect& effect, Buffer& vertexBuffer,
+	uint32 baseOffset, uint32 vertexStride, uint32 vertexCount)
+{
+	d3dContext->IASetInputLayout(effect.d3dIL);
+	d3dContext->VSSetShader(effect.d3dVS, nullptr, 0);
+	d3dContext->PSSetShader(effect.d3dPS, nullptr, 0);
+
+	ID3D11SamplerState *d3dSS = d3dDefaultSamplerState;
+	d3dContext->PSSetSamplers(0, 1, &d3dSS);
+
+	ID3D11Buffer *d3dVSCB = d3dTransformConstantBuffer;
+	d3dContext->VSSetConstantBuffers(0, 1, &d3dVSCB);
+
+	ID3D11Buffer *d3dPSCB = d3dCustomEffectConstantBuffer;
+	d3dContext->PSSetConstantBuffers(0, 1, &d3dPSCB);
+
+	if (!transformUpToDate)
+	{
+		Matrix2x3 ndcToScreenSpaceTransform =
+			Matrix2x3::VerticalReflection() *
+			Matrix2x3::Translation(-1.0f, -1.0f) *
+			Matrix2x3::Scale(2.0f / viewport.getWidth(), 2.0f / viewport.getHeight()) *
+			Matrix2x3::Translation(float32(viewport.left), float32(viewport.top));
+
+		TransformConstants transformConstants;
+		transformConstants.set(ndcToScreenSpaceTransform * transform);
+		d3dContext->UpdateSubresource(d3dTransformConstantBuffer,
+			0, nullptr, &transformConstants, 0, 0);
+
+		transformUpToDate = true;
+	}
+
+	d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY(primitiveType));
+	d3dContext->RSSetState(d3dDefaultRasterizerState);
+	d3dContext->OMSetBlendState(d3dDefaultBlendState, nullptr, 0xFFFFFFFF);
+
+	d3dContext->RSSetViewports(1, &D3D11ViewPort(float32(viewport.left), float32(viewport.top),
+		float32(viewport.right - viewport.left), float32(viewport.bottom - viewport.top)));
+
+	{
+		ID3D11Buffer *d3dBuffer = vertexBuffer.d3dBuffer;
+		UINT stride = vertexStride;
+		UINT offset = baseOffset;
+		d3dContext->IASetVertexBuffers(0, 1, &d3dBuffer, &stride, &offset);
+	}
+
+	d3dContext->Draw(vertexCount, 0);
+}
+
+bool Device::createCustomEffect(CustomEffect& effect, Effect defaultInputLayoutEffect,
+	const void* psBytecode, uint32 psBytecodeSize)
+{
+	ID3D11InputLayout *d3dIL = nullptr;
+	ID3D11VertexShader *d3dVS = nullptr;
+
+	switch (defaultInputLayoutEffect)
+	{
+	case Effect::PerVertexColor:
+		d3dIL = d3dColor2DIL;
+		d3dVS = d3dColor2DVS;
+		break;
+
+	case Effect::TexturedUnorm:
+		d3dIL = d3dTexturedUnorm2DIL;
+		d3dVS = d3dTextured2DVS;
+		break;
+
+	default:
+		return false;
+	}
+
+	return effect.inititalize(d3dDevice, d3dIL, d3dVS, psBytecode, psBytecodeSize);
 }
 
 // Buffer ===================================================================================//
@@ -293,4 +381,25 @@ bool WindowRenderTarget::resize(ID3D11Device* d3dDevice, uint32 width, uint32 he
 void WindowRenderTarget::present(bool sync)
 {
 	dxgiSwapChain->Present(sync ? 1 : 0, 0);
+}
+
+// CustomEffect =============================================================================//
+
+bool CustomEffect::inititalize(ID3D11Device* d3dDevice, uint32 ilElementCount,
+	const CustomEffectInputLayoutElement* ilElements,
+	const void* vsBytecode, uint32 vsBytecodeSize,
+	const void* psBytecode, uint32 psBytecodeSize)
+{
+	return false;
+}
+
+bool CustomEffect::inititalize(ID3D11Device* d3dDevice, ID3D11InputLayout* d3dIL,
+	ID3D11VertexShader* d3dVS, const void* psBytecode, uint32 psBytecodeSize)
+{
+	d3dDevice->CreatePixelShader(psBytecode, psBytecodeSize, nullptr, d3dPS.initRef());
+
+	this->d3dIL = d3dIL;
+	this->d3dVS = d3dVS;
+
+	return true;
 }

@@ -20,6 +20,13 @@ namespace Panter
 		Brush,
 	};
 
+	struct BrightnessContrastGammaFilterSettings
+	{
+		float32 brightness;
+		float32 contrast;
+		float32 gamma;
+	};
+
 	class CanvasManager : public XLib::NonCopyable
 	{
 	private: // meta
@@ -29,14 +36,15 @@ namespace Panter
 		//using Layers = XLib::Vector<XLib::Graphics::TextureRenderTarget>;
 
 	private: // data
+		XLib::Graphics::Device *device = nullptr;
+		XLib::Graphics::Buffer quadVertexBuffer;
+		XLib::Graphics::GeometryGenerator geometryGenerator;
+		XLib::Graphics::CustomEffect brightnessContrastGammaEffect;
+
 		XLib::Graphics::TextureRenderTarget layerTextures[16];
 		XLib::Graphics::TextureRenderTarget tempTexture;
 		uint32x2 canvasSize = { 0, 0 };
 		uint16 layerCount = 0;
-
-		XLib::Graphics::Device *device = nullptr;
-		XLib::Graphics::Buffer quadVertexBuffer;
-		XLib::Graphics::GeometryGenerator geometryGenerator;
 
 		rectu32 selection = {};
 
@@ -78,6 +86,8 @@ namespace Panter
 		void resize(uint32x2 newCanvasSize);
 		void updateAndDraw(XLib::Graphics::RenderTarget& target, const rectu32& viewport /* TODO: move from here */);
 		//void setViewport();
+
+		void brightnessContrastGammaFilter(bool preview, const BrightnessContrastGammaFilterSettings& settings);
 
 		void resetSelection();
 		void setInstrument(CanvasInstrument instrument);

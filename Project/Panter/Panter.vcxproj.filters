@@ -5,11 +5,16 @@
     <ClCompile Include="Source\Panter.EntryPoint.cpp" />
     <ClCompile Include="Source\Panter.ImageLoader.cpp" />
     <ClCompile Include="Source\Panter.MainWindow.cpp" />
+    <ClCompile Include="Source\Panter.CanvasManager.EffectShaders.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Panter.ImageLoader.h" />
     <ClInclude Include="Source\Panter.CanvasManager.h" />
     <ClInclude Include="Source\Panter.MainWindow.h" />
     <ClInclude Include="Source\Panter.Constants.h" />
+    <ClInclude Include="Source\Panter.CanvasManager.EffectShaders.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Source\Shaders\BrightnessContrastGammaPS.hlsl" />
   </ItemGroup>
 </Project>

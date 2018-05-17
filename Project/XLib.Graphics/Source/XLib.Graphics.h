@@ -43,6 +43,18 @@ namespace XLib::Graphics
 		TexturedUnorm = 3,
 	};
 
+	enum class CustomEffectInputLayoutElementType
+	{
+		None = 0,
+
+	};
+
+	struct CustomEffectInputLayoutElement
+	{
+		const char* name;
+		CustomEffectInputLayoutElementType type;
+	};
+
 	struct VertexBase2D
 	{
 		float32x2 position;
@@ -140,8 +152,33 @@ namespace XLib::Graphics
 		void present(bool sync = true);
 	};
 
+	class CustomEffect : public XLib::NonCopyable
+	{
+		friend class Device;
+
+	private:
+		XLib::Platform::COMPtr<ID3D11InputLayout> d3dIL;
+		XLib::Platform::COMPtr<ID3D11VertexShader> d3dVS;
+		XLib::Platform::COMPtr<ID3D11PixelShader> d3dPS;
+
+		bool inititalize(ID3D11Device* d3dDevice, uint32 ilElementCount,
+			const CustomEffectInputLayoutElement* ilElements,
+			const void* vsBytecode, uint32 vsBytecodeSize,
+			const void* psBytecode, uint32 psBytecodeSize);
+
+		bool inititalize(ID3D11Device* d3dDevice, ID3D11InputLayout* d3dIL,
+			ID3D11VertexShader* d3dVS, const void* psBytecode, uint32 psBytecodeSize);
+
+	public:
+		CustomEffect() = default;
+		~CustomEffect() = default;
+	};
+
 	class Device : public XLib::NonCopyable
 	{
+	private:
+		static constexpr uint32 customEffectConstantsSizeLimit = 64;
+
 	private:
 		static XLib::Platform::COMPtr<IDXGIFactory3> dxgiFactory;
 
@@ -160,7 +197,10 @@ namespace XLib::Graphics
 		XLib::Platform::COMPtr<ID3D11SamplerState> d3dDefaultSamplerState;
 		XLib::Platform::COMPtr<ID3D11BlendState> d3dDefaultBlendState;
 
-		XLib::Platform::COMPtr<ID3D11Buffer> d3dConstantBuffer;
+		XLib::Platform::COMPtr<ID3D11Buffer> d3dTransformConstantBuffer;
+		XLib::Platform::COMPtr<ID3D11Buffer> d3dCustomEffectConstantBuffer;
+
+		byte customEffectConstantsBuffer[customEffectConstantsSizeLimit];
 
 		rectu32 viewport = {};
 		XLib::Matrix2x3 transform = {};
@@ -175,11 +215,14 @@ namespace XLib::Graphics
 		void setScissorRect(const rectu32& rect);
 		void setTransform2D(const Matrix2x3& transform);
 		void setTexture(Texture& texture, uint32 slot = 0);
+		void setCustomEffectConstants(const void* data, uint32 size);
 
 		void updateBuffer(Buffer& buffer, const void* srcData, uint32 baseOffset, uint32 size);
 		void updateTexture(Texture& texture, const rectu32& region, const void* srcData, uint32 srcDataStride);
 
 		void draw2D(PrimitiveType primitiveType, Effect effect, Buffer& vertexBuffer,
+			uint32 baseOffset, uint32 vertexStride, uint32 vertexCount);
+		void draw2D(PrimitiveType primitiveType, CustomEffect& effect, Buffer& vertexBuffer,
 			uint32 baseOffset, uint32 vertexStride, uint32 vertexCount);
 		void drawIndexed2D(PrimitiveType primitiveType, Effect effect, Buffer& vertexBuffer,
 			uint32 baseOffset, uint32 vertexStride, uint32 vertexCount);
@@ -193,6 +236,18 @@ namespace XLib::Graphics
 		inline bool createWindowRenderTarget(WindowRenderTarget& renderTarget, void* hWnd, uint32 width, uint32 height)
 			{ return renderTarget.initialize(d3dDevice, dxgiFactory, hWnd, width, height); }
 		inline bool resizeWindowRenderTarget(WindowRenderTarget& renderTarget, uint32 width, uint32 height)
-			{ return renderTarget.resize(d3dDevice, width, height); }
+			{ return renderTarget.resize(d3dDevice, width, height); }			
+		inline bool createCustomEffect(CustomEffect& effect, uint32 ilElementCount, const CustomEffectInputLayoutElement* ilElements, const void* vsBytecode, uint32 vsBytecodeSize, const void* psBytecode, uint32 psBytecodeSize)
+			{ return effect.inititalize(d3dDevice, ilElementCount, ilElements, vsBytecode, vsBytecodeSize, psBytecode, psBytecodeSize); }
+		bool createCustomEffect(CustomEffect& effect, Effect defaultInputLayoutEffect, const void* psBytecode, uint32 psBytecodeSize);
+
+		template <typename Type>
+		inline void setCustomEffectConstants(const Type& constants)
+		{
+			static_assert(sizeof(Type) <= customEffectConstantsSizeLimit, "constant buffer is too large");
+			setCustomEffectConstants(&constants, sizeof(Type));
+		}
+
+		static constexpr uint32 GetCustomEffectConstantsSizeLimit() { return customEffectConstantsSizeLimit; }
 	};
 }

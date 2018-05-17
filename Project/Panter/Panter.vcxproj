@@ -103,6 +103,13 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <FxCompile>
+      <HeaderFileOutput>$(ProjectDir)Intermediate\Shaders\%(Filename).cso.h</HeaderFileOutput>
+    </FxCompile>
+    <FxCompile>
+      <ObjectFileOutput />
+      <VariableName>%(Filename)Data</VariableName>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -117,6 +124,13 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <FxCompile>
+      <HeaderFileOutput>$(ProjectDir)Intermediate\Shaders\%(Filename).cso.h</HeaderFileOutput>
+    </FxCompile>
+    <FxCompile>
+      <ObjectFileOutput />
+      <VariableName>%(Filename)Data</VariableName>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -135,6 +149,13 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <FxCompile>
+      <HeaderFileOutput>$(ProjectDir)Intermediate\Shaders\%(Filename).cso.h</HeaderFileOutput>
+    </FxCompile>
+    <FxCompile>
+      <ObjectFileOutput />
+      <VariableName>%(Filename)Data</VariableName>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -153,9 +174,17 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <FxCompile>
+      <HeaderFileOutput>$(ProjectDir)Intermediate\Shaders\%(Filename).cso.h</HeaderFileOutput>
+    </FxCompile>
+    <FxCompile>
+      <ObjectFileOutput />
+      <VariableName>%(Filename)Data</VariableName>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Panter.CanvasManager.cpp" />
+    <ClCompile Include="Source\Panter.CanvasManager.EffectShaders.cpp" />
     <ClCompile Include="Source\Panter.EntryPoint.cpp" />
     <ClCompile Include="Source\Panter.ImageLoader.cpp" />
     <ClCompile Include="Source\Panter.MainWindow.cpp" />
@@ -165,6 +194,7 @@
     <ClInclude Include="Source\Panter.Constants.h" />
     <ClInclude Include="Source\Panter.ImageLoader.h" />
     <ClInclude Include="Source\Panter.MainWindow.h" />
+    <ClInclude Include="Source\Panter.CanvasManager.EffectShaders.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\XLib.Graphics\XLib.Graphics.vcxproj">
@@ -173,6 +203,18 @@
     <ProjectReference Include="..\XLib\XLib.vcxproj">
       <Project>{df81a513-72e3-4b74-b866-97f3bb61d45f}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Source\Shaders\BrightnessContrastGammaPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

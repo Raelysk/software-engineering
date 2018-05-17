@@ -4,6 +4,7 @@
 #include "Panter.CanvasManager.h"
 
 #include "Panter.Constants.h"
+#include "Panter.CanvasManager.EffectShaders.h"
 
 using namespace XLib;
 using namespace XLib::Graphics;
@@ -25,6 +26,8 @@ inline float32x2 CanvasManager::convertViewToCanvasSpace(sint16x2 position)
 	return float32x2(position) * viewToCanvasTransform;
 }
 
+// Public interface =============================================================================//
+
 void CanvasManager::initialize(Device& device, uint32x2 canvasSize)
 {
 	this->canvasSize = canvasSize;
@@ -33,6 +36,9 @@ void CanvasManager::initialize(Device& device, uint32x2 canvasSize)
 
 	device.createBuffer(quadVertexBuffer, sizeof(VertexTexturedUnorm2D) * 6);
 	geometryGenerator.initialize(device);
+
+	device.createCustomEffect(brightnessContrastGammaEffect, Effect::TexturedUnorm,
+		EffectShaders::BrightnessContrastGammaPS.data, EffectShaders::BrightnessContrastGammaPS.size);
 
 	centerView();
 	selection = { 0, 0, canvasSize };
@@ -257,7 +263,19 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 		geometryGenerator.flush();
 	}
 
+	// view space foreground
+	{
+		//device->setTransform2D(Matrix2x3::Identity());
+	}
+
 	prevPointerPosition = pointerPosition;
+}
+
+// Filters ======================================================================================//
+
+void brightnessContrastGammaFilter(bool preview, const BrightnessContrastGammaFilterSettings& settings)
+{
+
 }
 
 // Canvas modification / controls handling ======================================================//
