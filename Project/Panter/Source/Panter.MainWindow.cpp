@@ -27,6 +27,14 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 			canvasManager.centerView();
 			break;
 
+		case VirtualKey('R'):
+			canvasManager.resetSelection();
+			break;
+
+		case VirtualKey('S'):
+			canvasManager.setInstrument(CanvasInstrument::Select);
+			break;
+
 		case VirtualKey('P'):
 			canvasManager.setInstrument(CanvasInstrument::Pencil);
 			break;

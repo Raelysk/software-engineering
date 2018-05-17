@@ -35,6 +35,7 @@ void CanvasManager::initialize(Device& device, uint32x2 canvasSize)
 	geometryGenerator.initialize(device);
 
 	centerView();
+	selection = { 0, 0, canvasSize };
 }
 
 void CanvasManager::destroy()
@@ -62,23 +63,59 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 			break;
 
 		case CanvasInstrument::Select:
+			if (pointerIsActive)
+			{
+				if (!selectionInProgress)
+				{
+					float32x2 selectionFirstCornerPositionF = convertViewToCanvasSpace(pointerPosition);
+					// TODO: implement vector operations
+					selectionFirstCornerPositionF.x = max(selectionFirstCornerPositionF.x, 0.0f);
+					selectionFirstCornerPositionF.y = max(selectionFirstCornerPositionF.y, 0.0f);
+					selectionFirstCornerPosition = uint32x2(selectionFirstCornerPositionF);
+					selectionFirstCornerPosition.x = min(selectionFirstCornerPosition.x, canvasSize.x);
+					selectionFirstCornerPosition.y = min(selectionFirstCornerPosition.y, canvasSize.y);
+
+					// reset selection initially
+					selection = { 0, 0, canvasSize };
+
+					selectionInProgress = true;
+				}
+				else
+				{
+					float32x2 selectionSecondCornerPositionF = convertViewToCanvasSpace(pointerPosition);
+					// TODO: implement vector operations
+					selectionSecondCornerPositionF.x = max(selectionSecondCornerPositionF.x, 0.0f);
+					selectionSecondCornerPositionF.y = max(selectionSecondCornerPositionF.y, 0.0f);
+					uint32x2 selectionSecondCornerPosition = uint32x2(selectionSecondCornerPositionF);
+					selectionSecondCornerPosition.x = min(selectionSecondCornerPosition.x, canvasSize.x);
+					selectionSecondCornerPosition.y = min(selectionSecondCornerPosition.y, canvasSize.y);
+
+					if (selectionFirstCornerPosition == selectionSecondCornerPosition)
+					{
+						// reset selection
+						selection = { 0, 0, canvasSize };
+					}
+					else
+					{
+						selection.left   = min(selectionFirstCornerPosition.x, selectionSecondCornerPosition.x);
+						selection.top    = min(selectionFirstCornerPosition.y, selectionSecondCornerPosition.y);
+						selection.right  = max(selectionFirstCornerPosition.x, selectionSecondCornerPosition.x);
+						selection.bottom = max(selectionFirstCornerPosition.y, selectionSecondCornerPosition.y);
+					}
+				}
+			}
+			else
+			{
+				selectionInProgress = false;
+			}
 			break;
 
 		case CanvasInstrument::SelectionResize:
 			break;
 
 		case CanvasInstrument::Pencil:
-			if (pointerIsActive)
+			if (pointerIsActive && prevPointerPosition != pointerPosition)
 			{
-				if (!pencilIsDrawing)
-				{
-					pencilIsDrawing = true;
-					break;
-				}
-
-				if (prevPointerPosition == pointerPosition)
-					break;
-
 				device->setRenderTarget(layerTextures[0]);
 				device->setViewport(rectu32(0, 0, canvasSize));
 				device->setScissorRect(selection);
@@ -224,6 +261,11 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 }
 
 // Canvas modification / controls handling ======================================================//
+
+void CanvasManager::resetSelection()
+{
+	selection = { 0, 0, canvasSize };
+}
 
 void CanvasManager::setInstrument(CanvasInstrument instrument)
 {

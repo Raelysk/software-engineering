@@ -38,6 +38,8 @@ namespace Panter
 		XLib::Graphics::Buffer quadVertexBuffer;
 		XLib::Graphics::GeometryGenerator geometryGenerator;
 
+		rectu32 selection = {};
+
 		float32x2 canvasPosition = { 0.0f, 0.0f };
 		float32 canvasScale = 0.0f;
 		bool viewCentered = false;
@@ -50,8 +52,8 @@ namespace Panter
 
 		//union
 		//{
-		rectu32 selection = { 100, 100, 300, 300 };
-		bool pencilIsDrawing = false;
+		bool selectionInProgress = false;
+		uint32x2 selectionFirstCornerPosition = { 0, 0 };
 		//} instrumentsData;
 
 		sint16x2 pointerPosition = { 0, 0 };
@@ -77,6 +79,7 @@ namespace Panter
 		void updateAndDraw(XLib::Graphics::RenderTarget& target, const rectu32& viewport /* TODO: move from here */);
 		//void setViewport();
 
+		void resetSelection();
 		void setInstrument(CanvasInstrument instrument);
 		void setColor(XLib::Color color);
 		void setPointerState(sint16x2 position, bool isActive);
