@@ -16,7 +16,7 @@ namespace XLib::Graphics::Internal
 		static ShaderData Color2DVS;
 		static ShaderData ColorPS;
 
-        static ShaderData Textured2DVS;
-        static ShaderData TexturedPS;
+		static ShaderData Textured2DVS;
+		static ShaderData TexturedPS;
 	};
 }

@@ -137,3 +137,13 @@ inline D3D11_SUBRESOURCE_DATA D3D11SubresourceData(const void* data, UINT pitch,
 	result.SysMemSlicePitch = slicePitch;
 	return result;
 }
+
+inline D3D11_RECT D3D11Rect(UINT left, UINT top, UINT right, UINT bottom)
+{
+	D3D11_RECT result;
+	result.left = left;
+	result.top = top;
+	result.right = right;
+	result.bottom = bottom;
+	return result;
+}

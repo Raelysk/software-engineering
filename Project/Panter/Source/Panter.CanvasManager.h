@@ -50,7 +50,7 @@ namespace Panter
 
 		//union
 		//{
-		rectu32 selection = { 0, 0, 0, 0 };
+		rectu32 selection = { 100, 100, 300, 300 };
 		bool pencilIsDrawing = false;
 		//} instrumentsData;
 

@@ -3,6 +3,8 @@
 
 #include "Panter.CanvasManager.h"
 
+#include "Panter.Constants.h"
+
 using namespace XLib;
 using namespace XLib::Graphics;
 using namespace Panter;
@@ -10,12 +12,12 @@ using namespace Panter;
 inline void CanvasManager::updateCanvasTransforms()
 {
 	viewToCanvasTransform =
-		Matrix2x3::Scale(1.0f / canvasScale) *
+		Matrix2x3::Scale(1.0f / inertCanvasScale) *
 		Matrix2x3::Translation(-inertCanvasPosition);
 
 	canvasToViewTransform =
 		Matrix2x3::Translation(inertCanvasPosition) *
-		Matrix2x3::Scale(canvasScale);
+		Matrix2x3::Scale(inertCanvasScale);
 }
 
 inline float32x2 CanvasManager::convertViewToCanvasSpace(sint16x2 position)
@@ -78,7 +80,8 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 					break;
 
 				device->setRenderTarget(layerTextures[0]);
-				device->setViewport(rectu32(0, 0, canvasSize.x, canvasSize.y));
+				device->setViewport(rectu32(0, 0, canvasSize));
+				device->setScissorRect(selection);
 				device->setTransform2D(Matrix2x3::Identity());
 
 				float32x2 segmentBegin = convertViewToCanvasSpace(prevPointerPosition);
@@ -93,7 +96,8 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 			if (pointerIsActive)
 			{
 				device->setRenderTarget(layerTextures[0]);
-				device->setViewport(rectu32(0, 0, canvasSize.x, canvasSize.y));
+				device->setViewport(rectu32(0, 0, canvasSize));
+				device->setScissorRect(selection);
 				device->setTransform2D(Matrix2x3::Identity());
 
 				float32x2 center = float32x2(pointerPosition) * viewToCanvasTransform;
@@ -161,6 +165,7 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 
 	device->setRenderTarget(target);
 	device->setViewport(viewport);
+	device->setScissorRect(viewport);
 	device->setTransform2D(Matrix2x3::Identity());
 
 	// background
@@ -176,15 +181,43 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 			quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
 	}
 
-	// foreground
+	// canvas space foreground
 	{
-		// selection rendering
-		/*rectf32 viewSelectionRect;
-		viewSelectionRect.leftTop = float32x2(selection.leftTop) * canvasToViewTransform;
-		viewSelectionRect.rightBottom = float32x2(selection.rightBottom) * canvasToViewTransform;
+		device->setTransform2D(canvasToViewTransform);
 
-		geometryGenerator.drawRect(viewSelectionRect, 0x008AF440_rgba);
-		geometryGenerator.flush();*/
+		// selection rendering
+		rectf32 selectionF(selection);
+		float32x2 canvasSizeF(canvasSize);
+
+		if (selection.left > 0)
+		{
+			geometryGenerator.drawRect(
+				rectf32(0.0f, 0.0f, selectionF.left, canvasSizeF.y),
+				SelectionShadowColor);
+		}
+
+		if (selection.right < canvasSize.x)
+		{
+			geometryGenerator.drawRect(
+				rectf32(selectionF.right, 0.0f, canvasSizeF.x, canvasSizeF.y),
+				SelectionShadowColor);
+		}
+
+		if (selection.top > 0)
+		{
+			geometryGenerator.drawRect(
+				rectf32(selectionF.left, 0.0f, selectionF.right, selectionF.top),
+				SelectionShadowColor);
+		}
+
+		if (selection.bottom < canvasSize.y)
+		{
+			geometryGenerator.drawRect(
+				rectf32(selectionF.left, selectionF.bottom, selectionF.right, canvasSizeF.y),
+				SelectionShadowColor);
+		}
+
+		geometryGenerator.flush();
 	}
 
 	prevPointerPosition = pointerPosition;

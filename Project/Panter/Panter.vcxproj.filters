@@ -10,5 +10,6 @@
     <ClInclude Include="Source\Panter.ImageLoader.h" />
     <ClInclude Include="Source\Panter.CanvasManager.h" />
     <ClInclude Include="Source\Panter.MainWindow.h" />
+    <ClInclude Include="Source\Panter.Constants.h" />
   </ItemGroup>
 </Project>

@@ -74,7 +74,14 @@ bool Device::initialize()
     d3dDevice->CreateVertexShader(Shaders::Textured2DVS.data, Shaders::Textured2DVS.size, nullptr, d3dTextured2DVS.initRef());
     d3dDevice->CreatePixelShader(Shaders::TexturedPS.data, Shaders::TexturedPS.size, nullptr, d3dTexturedPS.initRef());
 
-    d3dDevice->CreateSamplerState(&D3D11SamplerDesc(D3D11_FILTER_MIN_MAG_MIP_LINEAR), d3dDefaultSamplerState.initRef());
+	d3dDevice->CreateRasterizerState(
+		&D3D11RasterizerDesc(D3D11_FILL_SOLID, D3D11_CULL_BACK, false, 0, 0.0f, 0.0f, false, true),
+		d3dDefaultRasterizerState.initRef());
+
+    d3dDevice->CreateSamplerState(
+		&D3D11SamplerDesc(D3D11_FILTER_MIN_MAG_MIP_LINEAR),
+		d3dDefaultSamplerState.initRef());
+
     d3dDevice->CreateBlendState(
         &D3D11BlendDesc(
             D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_OP_ADD, D3D11_BLEND_INV_SRC_ALPHA,
@@ -104,6 +111,11 @@ void Device::setViewport(const rectu32& viewport)
 {
     this->viewport = viewport;
     transformUpToDate = false;
+}
+
+void Device::setScissorRect(const rectu32& rect)
+{
+	d3dContext->RSSetScissorRects(1, &D3D11Rect(rect.left, rect.top, rect.right, rect.bottom));
 }
 
 void Device::setTransform2D(const Matrix2x3& transform)
@@ -186,7 +198,7 @@ void Device::draw2D(PrimitiveType primitiveType, Effect effect, Buffer& vertexBu
     }
 
     d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY(primitiveType));
-
+	d3dContext->RSSetState(d3dDefaultRasterizerState);
     d3dContext->OMSetBlendState(d3dDefaultBlendState, nullptr, 0xFFFFFFFF);
 
     d3dContext->RSSetViewports(1, &D3D11ViewPort(float32(viewport.left), float32(viewport.top),

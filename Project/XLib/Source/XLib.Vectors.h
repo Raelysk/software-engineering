@@ -71,6 +71,8 @@ struct rectvar
 	rectvar() = default;
 	constexpr inline rectvar(type _left, type _top, type _right, type _bottom) : left(_left), top(_top), right(_right), bottom(_bottom) {}
 	constexpr inline rectvar(const vec2<type>& _leftTop, const vec2<type>& _rightBottom) : leftTop(_leftTop), rightBottom(_rightBottom) {}
+	constexpr inline rectvar(const vec2<type>& _leftTop, type _right, type _bottom) : leftTop(_leftTop), rightBottom(_right, _bottom) {}
+	constexpr inline rectvar(type _left, type _top, const vec2<type>& _rightBottom) : leftTop(_left, _top), rightBottom(_rightBottom) {}
 	template <typename type1> constexpr inline rectvar(const rectvar<type1>& a) : left(type(a.left)), top(type(a.top)), right(type(a.right)), bottom(type(a.bottom)) {}
 
 	constexpr inline type getWidth() const { return right - left; }

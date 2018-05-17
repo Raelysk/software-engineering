@@ -3,12 +3,12 @@
 #include "XLib.Types.h"
 #include "XLib.Vectors.h"
 
+constexpr inline uint32 operator "" _rgb(uint64 val) { return ((val & 0xFF) << 16) | (val & 0xFF00) | ((val & 0xFF0000) >> 16) | 0xFF000000; }
+constexpr inline uint32 operator "" _rgba(uint64 val) { return ((val & 0xFF) << 24) | ((val & 0xFF00) << 8) | ((val & 0xFF0000) >> 8) | ((val & 0xFF000000) >> 24); }
+constexpr inline uint32 rgba(uint32 rgb, uint8 a) { return (rgb & 0xFFFFFF) | (uint32(a) << 24); }
+
 namespace XLib
 {
-	constexpr inline uint32 operator "" _rgb(uint64 val) { return ((val & 0xFF) << 16) | (val & 0xFF00) | ((val & 0xFF0000) >> 16) | 0xFF000000; }
-	constexpr inline uint32 operator "" _rgba(uint64 val) { return ((val & 0xFF) << 24) | ((val & 0xFF00) << 8) | ((val & 0xFF0000) >> 8) | ((val & 0xFF000000) >> 24); }
-	constexpr inline uint32 rgba(uint32 rgb, uint8 a) { return (rgb & 0xFFFFFF) | (uint32(a) << 24); }
-
 	struct Color
 	{
 		union
