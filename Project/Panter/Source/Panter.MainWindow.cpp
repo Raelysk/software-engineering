@@ -36,27 +36,47 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 			break;
 
 		case VirtualKey('S'):
-			canvasManager.setInstrument(CanvasInstrument::Select);
+			currentColorChangeTarget = nullptr;
+			canvasManager.setInstrument_selection();
 			break;
 
 		case VirtualKey('P'):
-			canvasManager.setInstrument(CanvasInstrument::Pencil);
+		{
+			auto &settings = canvasManager.setInstrument_pencil(currentColor);
+			currentColorChangeTarget = &settings.color;
 			break;
+		}
 
 		case VirtualKey('B'):
-			canvasManager.setInstrument(CanvasInstrument::Brush);
+		{
+			auto &settings = canvasManager.setInstrument_brush(currentColor, 5.0f);
+			currentColorChangeTarget = &settings.color;
 			break;
+		}
+
+		case VirtualKey('F'):
+		{
+			currentColorChangeTarget = nullptr;
+			auto &settings = canvasManager.setInstrument_brightnessContrastGammaFilter(0.0f, 1.0f, 5.0f);
+			break;
+		}
 
 		case VirtualKey('1'):
-			canvasManager.setColor(0xFF0000_rgb);
+			currentColor = 0xFF0000_rgb;
+			if (currentColorChangeTarget)
+				*currentColorChangeTarget = currentColor;
 			break;
 
 		case VirtualKey('2'):
-			canvasManager.setColor(0x00FF00_rgb);
+			currentColor = 0x00FF00_rgb;
+			if (currentColorChangeTarget)
+				*currentColorChangeTarget = currentColor;
 			break;
 
 		case VirtualKey('3'):
-			canvasManager.setColor(0x0000FF_rgb);
+			currentColor = 0x0000FF_rgb;
+			if (currentColorChangeTarget)
+				*currentColorChangeTarget = currentColor;
 			break;
 
 		case VirtualKey('O'):
@@ -75,18 +95,6 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 			rectu32 dstRegion(0, 0, dstWidth, dstHeight);
 
 			canvasManager.uploadLayerRegion(0, dstRegion, imageData, width * 4);
-
-			break;
-		}
-
-		case VirtualKey('F'):
-		{
-			BrightnessContrastGammaFilterSettings settings;
-			settings.brightness = 0.0f;
-			settings.contrast = 1.0f;
-			settings.gamma = 5.0f;
-
-			canvasManager.brightnessContrastGammaFilter(true, settings);
 
 			break;
 		}

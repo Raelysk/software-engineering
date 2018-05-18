@@ -10,22 +10,6 @@ using namespace XLib;
 using namespace XLib::Graphics;
 using namespace Panter;
 
-inline void CanvasManager::updateCanvasTransforms()
-{
-	viewToCanvasTransform =
-		Matrix2x3::Scale(1.0f / inertCanvasScale) *
-		Matrix2x3::Translation(-inertCanvasPosition);
-
-	canvasToViewTransform =
-		Matrix2x3::Translation(inertCanvasPosition) *
-		Matrix2x3::Scale(inertCanvasScale);
-}
-
-inline float32x2 CanvasManager::convertViewToCanvasSpace(sint16x2 position)
-{
-	return float32x2(position) * viewToCanvasTransform;
-}
-
 // Public interface =============================================================================//
 
 void CanvasManager::initialize(Device& device, uint32x2 canvasSize)
@@ -67,96 +51,27 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 		// update instrument state
 		switch (currentInstrument)
 		{
-		case CanvasInstrument::None:
-			break;
+			case Instrument::None:
+				break;
 
-		case CanvasInstrument::Select:
-			if (pointerIsActive)
-			{
-				if (!selectionInProgress)
-				{
-					float32x2 selectionFirstCornerPositionF = convertViewToCanvasSpace(pointerPosition);
-					// TODO: implement vector operations
-					selectionFirstCornerPositionF.x = max(selectionFirstCornerPositionF.x, 0.0f);
-					selectionFirstCornerPositionF.y = max(selectionFirstCornerPositionF.y, 0.0f);
-					selectionFirstCornerPosition = uint32x2(selectionFirstCornerPositionF);
-					selectionFirstCornerPosition.x = min(selectionFirstCornerPosition.x, canvasSize.x);
-					selectionFirstCornerPosition.y = min(selectionFirstCornerPosition.y, canvasSize.y);
+			case Instrument::Selection:
+				updateInstrument_selection();
+				break;
 
-					// reset selection initially
-					selection = { 0, 0, canvasSize };
+			case Instrument::Pencil:
+				updateInstrument_pencil();
+				break;
 
-					selectionInProgress = true;
-				}
-				else
-				{
-					float32x2 selectionSecondCornerPositionF = convertViewToCanvasSpace(pointerPosition);
-					// TODO: implement vector operations
-					selectionSecondCornerPositionF.x = max(selectionSecondCornerPositionF.x, 0.0f);
-					selectionSecondCornerPositionF.y = max(selectionSecondCornerPositionF.y, 0.0f);
-					uint32x2 selectionSecondCornerPosition = uint32x2(selectionSecondCornerPositionF);
-					selectionSecondCornerPosition.x = min(selectionSecondCornerPosition.x, canvasSize.x);
-					selectionSecondCornerPosition.y = min(selectionSecondCornerPosition.y, canvasSize.y);
+			case Instrument::Brush:
+				updateInstrument_brush();
+				break;
 
-					if (selectionFirstCornerPosition == selectionSecondCornerPosition)
-					{
-						// reset selection
-						selection = { 0, 0, canvasSize };
-					}
-					else
-					{
-						selection.left   = min(selectionFirstCornerPosition.x, selectionSecondCornerPosition.x);
-						selection.top    = min(selectionFirstCornerPosition.y, selectionSecondCornerPosition.y);
-						selection.right  = max(selectionFirstCornerPosition.x, selectionSecondCornerPosition.x);
-						selection.bottom = max(selectionFirstCornerPosition.y, selectionSecondCornerPosition.y);
-					}
-				}
-			}
-			else
-			{
-				selectionInProgress = false;
-			}
-			break;
+			case Instrument::BrightnessContrastGammaFilter:
+				updateInstrument_brightnessContrastGammaFilter();
+				break;
 
-		case CanvasInstrument::SelectionResize:
-			break;
-
-		case CanvasInstrument::Pencil:
-			if (pointerIsActive && prevPointerPosition != pointerPosition)
-			{
-				device->setRenderTarget(layerTextures[0]);
-				device->setViewport(rectu32(0, 0, canvasSize));
-				device->setScissorRect(selection);
-				device->setTransform2D(Matrix2x3::Identity());
-
-				float32x2 segmentBegin = convertViewToCanvasSpace(prevPointerPosition);
-				float32x2 segmentEnd = convertViewToCanvasSpace(pointerPosition);
-
-				geometryGenerator.drawLine(segmentBegin, segmentEnd, 1.0f, currentColor);
-				geometryGenerator.flush();
-			}
-			break;
-
-		case CanvasInstrument::Brush:
-			if (pointerIsActive)
-			{
-				device->setRenderTarget(layerTextures[0]);
-				device->setViewport(rectu32(0, 0, canvasSize));
-				device->setScissorRect(selection);
-				device->setTransform2D(Matrix2x3::Identity());
-
-				float32x2 center = float32x2(pointerPosition) * viewToCanvasTransform;
-
-				geometryGenerator.drawRect(rectf32(
-					center - float32x2(5.0f, 5.0f),
-					center + float32x2(5.0f, 5.0f)),
-					currentColor);
-				geometryGenerator.flush();
-			}
-			break;
-
-		default:
-			Debug::Crash("invalid instrument");
+			default:
+				Debug::Crash("invalid instrument");
 		}
 	}
 
@@ -190,7 +105,13 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 	inertCanvasScale += (canvasScale - inertCanvasScale) * viewIntertiaFactor;
 
 	// TODO: remove from here.
-	updateCanvasTransforms();
+	viewToCanvasTransform =
+		Matrix2x3::Scale(1.0f / inertCanvasScale) *
+		Matrix2x3::Translation(-inertCanvasPosition);
+
+	canvasToViewTransform =
+		Matrix2x3::Translation(inertCanvasPosition) *
+		Matrix2x3::Scale(inertCanvasScale);
 
 	rectf32 viewCanvasRect = {};
 	viewCanvasRect.leftTop = inertCanvasPosition;
@@ -224,10 +145,7 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 	// canvas
 	for (uint16 i = 0; i < layerCount; i++)
 	{
-		if (i == 0 && filterPreview)
-			device->setTexture(tempTexture);
-		else
-			device->setTexture(layerTextures[i]);
+		device->setTexture(layerTextures[i]);
 		device->draw2D(PrimitiveType::TriangleList, Effect::TexturedUnorm,
 			quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
 	}
@@ -279,58 +197,24 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 	prevPointerPosition = pointerPosition;
 }
 
-// Filters ======================================================================================//
-
-void CanvasManager::brightnessContrastGammaFilter(bool preview, const BrightnessContrastGammaFilterSettings& settings)
-{
-	{
-		float32x2 canvasSizeF(canvasSize);
-
-		VertexTexturedUnorm2D vertices[6];
-		vertices[0] = { { 0.0f,          0.0f          }, { 0,      0      } };
-		vertices[1] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
-		vertices[2] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
-		vertices[3] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
-		vertices[4] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
-		vertices[5] = { { canvasSizeF.x, canvasSizeF.y }, { 0xFFFF, 0xFFFF } };
-
-		device->updateBuffer(quadVertexBuffer, vertices, 0, sizeof(vertices));
-	}
-
-	device->setRenderTarget(tempTexture);
-	device->setViewport(rectu32(0, 0, canvasSize));
-	device->setScissorRect(selection);
-	device->setTransform2D(Matrix2x3::Identity());
-	device->setTexture(layerTextures[0]);
-	device->setCustomEffectConstants(settings);
-
-	device->draw2D(PrimitiveType::TriangleList, brightnessContrastGammaEffect,
-		quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
-
-	filterPreview = true;
-}
-
-// Canvas modification / controls handling ======================================================//
+// Basic controls ===============================================================================//
 
 void CanvasManager::resetSelection()
 {
 	selection = { 0, 0, canvasSize };
 }
 
-void CanvasManager::setInstrument(CanvasInstrument instrument)
-{
-	currentInstrument = instrument;
-}
-
-void CanvasManager::setColor(Color color)
-{
-	currentColor = color;
-}
-
 void CanvasManager::setPointerState(sint16x2 position, bool isActive)
 {
 	pointerPosition = position;
 	pointerIsActive = isActive;
+}
+
+void CanvasManager::setCurrentLayer(uint16 layerIndex)
+{
+	Debug::CrashCondition(layerIndex >= layerCount, DbgMsgFmt("invalid layer index"));
+
+	currentLayer = layerIndex;
 }
 
 // Layers handling ==============================================================================//

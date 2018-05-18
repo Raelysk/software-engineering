@@ -7,6 +7,7 @@
     <ClCompile Include="Source\Panter.MainWindow.cpp" />
     <ClCompile Include="Source\Panter.CanvasManager.EffectShaders.cpp" />
     <ClCompile Include="Source\SystemUtil.cpp" />
+    <ClCompile Include="Source\Panter.CanvasManager-Instruments.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Panter.ImageLoader.h" />

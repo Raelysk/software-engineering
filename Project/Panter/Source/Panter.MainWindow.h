@@ -15,6 +15,9 @@ namespace Panter
 		XLib::Graphics::WindowRenderTarget windowRenderTarget;
 		uint16 width = 0, height = 0;
 
+		XLib::Color currentColor = 0;
+		XLib::Color *currentColorChangeTarget = nullptr;
+
 		CanvasManager canvasManager;
 
 	private: // code

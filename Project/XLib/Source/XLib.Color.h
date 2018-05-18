@@ -17,7 +17,7 @@ namespace XLib
 			uint32 rgba;
 		};
 
-		constexpr inline Color() : rgba(0) {}
+		Color() = default;
 		constexpr inline Color(uint32 _rgba) : rgba(_rgba) {}
 		constexpr inline Color(uint8 _r, uint8 _g, uint8 _b, uint8 _a) : r(_r), g(_g), b(_b), a(_a) {}
 
