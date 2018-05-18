@@ -278,7 +278,11 @@ void CanvasManager::panView(float32x2 offset)
 void CanvasManager::scaleView(float32 scaleFactor)
 {
 	viewCentered = false;
-	canvasScale *= scaleFactor;
+
+	float32 newCanvasScale = canvasScale * scaleFactor;
+	float32x2 scaleCenter = float32x2(pointerPosition) * viewToCanvasTransform;
+	canvasPosition += scaleCenter * (canvasScale - newCanvasScale);
+	canvasScale = newCanvasScale;
 }
 
 void CanvasManager::setAbsoluteCanvasScale(float32 scale)
