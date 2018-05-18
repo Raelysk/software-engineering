@@ -116,6 +116,9 @@ namespace Panter
 		//void undo();
 		//void redo();
 
+        inline XLib::Color getColor() const { return currentColor; }
+        inline CanvasInstrument getCanvasInstrument() const { return currentInstrument; }
+
 		inline uint32x2 getCanvasSize() const { return canvasSize; }
 		inline uint32 getCanvasWidth() const { return canvasSize.x; }
 		inline uint32 getCanvasHeight() const { return canvasSize.y; }

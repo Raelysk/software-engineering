@@ -124,6 +124,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <FxCompile>
       <HeaderFileOutput>$(ProjectDir)Intermediate\Shaders\%(Filename).cso.h</HeaderFileOutput>
@@ -176,6 +177,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <FxCompile>
       <HeaderFileOutput>$(ProjectDir)Intermediate\Shaders\%(Filename).cso.h</HeaderFileOutput>
@@ -187,6 +189,10 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\imgui\imgui.cpp" />
+    <ClCompile Include="Source\imgui\imgui_demo.cpp" />
+    <ClCompile Include="Source\imgui\imgui_draw.cpp" />
+    <ClCompile Include="Source\imgui\imgui_impl_dx11.cpp" />
     <ClCompile Include="Source\Panter.CanvasManager.cpp" />
     <ClCompile Include="Source\Panter.CanvasManager.EffectShaders.cpp" />
     <ClCompile Include="Source\Panter.EntryPoint.cpp" />
@@ -195,6 +201,10 @@
     <ClCompile Include="Source\SystemUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\imgui\imconfig.h" />
+    <ClInclude Include="Source\imgui\imgui.h" />
+    <ClInclude Include="Source\imgui\imgui_impl_dx11.h" />
+    <ClInclude Include="Source\imgui\imgui_internal.h" />
     <ClInclude Include="Source\Panter.CanvasManager.h" />
     <ClInclude Include="Source\Panter.Constants.h" />
     <ClInclude Include="Source\Panter.ImageLoader.h" />

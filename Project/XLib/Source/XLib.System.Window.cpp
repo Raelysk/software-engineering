@@ -2,9 +2,12 @@
 #include <WindowsX.h>
 
 #include "XLib.System.Window.h"
+#include "../../Panter/Source/imgui/imgui.h"
 
 using namespace XLib;
 using namespace XLib::Internal;
+
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 CreationArgs creationArgs(uint16 x, uint16 y) {	return { x, y }; }
 ResizingArgs resizingArgs(uint16 x, uint16 y) { return { x, y }; }
@@ -18,7 +21,18 @@ struct Internal::WindowInternal abstract final
 {
 	static LRESULT __stdcall WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		WindowBase *window = nullptr;
+
+        if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
+            return true;
+
+        if (ImGui::GetCurrentContext() != NULL) {
+            ImGuiIO& io = ImGui::GetIO();
+            if (io.WantCaptureMouse) {
+                return true;
+            }
+        }
+
+        WindowBase *window = nullptr;
 		if (message == WM_NCCREATE)
 		{
 			CREATESTRUCT *createStruct = (CREATESTRUCT*)lParam;

@@ -7,6 +7,18 @@
     <ClCompile Include="Source\Panter.MainWindow.cpp" />
     <ClCompile Include="Source\Panter.CanvasManager.EffectShaders.cpp" />
     <ClCompile Include="Source\SystemUtil.cpp" />
+    <ClCompile Include="Source\imgui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\imgui\imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\imgui\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\imgui\imgui_impl_dx11.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Panter.ImageLoader.h" />
@@ -15,9 +27,26 @@
     <ClInclude Include="Source\Panter.Constants.h" />
     <ClInclude Include="Source\Panter.CanvasManager.EffectShaders.h" />
     <ClInclude Include="Source\SystemUtil.h" />
+    <ClInclude Include="Source\imgui\imconfig.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\imgui\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\imgui\imgui_impl_dx11.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\imgui\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\BrightnessContrastGammaPS.hlsl" />
     <FxCompile Include="Source\Shaders\CheckerboardPS.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{af3a4d0d-fef0-49dd-a016-3192d3c2a7d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

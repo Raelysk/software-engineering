@@ -40,6 +40,8 @@ namespace XLib::Platform
 		}
 		inline void** voidInitRef() { return (void**)initRef(); }
 
+        inline Type* get() const { return ptr; }
+
 		inline Type*const* operator & () { return &ptr; }
 
 		inline Type* operator -> () { return ptr; }
