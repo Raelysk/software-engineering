@@ -25,6 +25,9 @@ void MainWindow::onCreate(CreationArgs& args)
 
 void MainWindow::onKeyboard(VirtualKey key, bool state)
 {
+	if (!state)
+		return;
+
 	switch (key)
 	{
 		case VirtualKey('C'):
@@ -37,11 +40,13 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 
 		case VirtualKey('S'):
 			currentColorChangeTarget = nullptr;
+			someParameterChangeTarget = nullptr;
 			canvasManager.setInstrument_selection();
 			break;
 
 		case VirtualKey('P'):
 		{
+			someParameterChangeTarget = nullptr;
 			auto &settings = canvasManager.setInstrument_pencil(currentColor);
 			currentColorChangeTarget = &settings.color;
 			break;
@@ -51,6 +56,7 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 		{
 			auto &settings = canvasManager.setInstrument_brush(currentColor, 5.0f);
 			currentColorChangeTarget = &settings.color;
+			someParameterChangeTarget = &settings.width;
 			break;
 		}
 
@@ -58,6 +64,7 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 		{
 			currentColorChangeTarget = nullptr;
 			auto &settings = canvasManager.setInstrument_brightnessContrastGammaFilter(0.0f, 1.0f, 5.0f);
+			someParameterChangeTarget = &settings.gamma;
 			break;
 		}
 
@@ -98,6 +105,27 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 
 			break;
 		}
+
+		case VirtualKey('Q'):
+			canvasManager.resetSelection();
+			break;
+
+		case VirtualKey::Up:
+			if (someParameterChangeTarget)
+			{
+				*someParameterChangeTarget *= 1.1f;
+				canvasManager.updateInstrumentSettings();
+			}
+			break;
+
+		case VirtualKey::Down:
+			if (someParameterChangeTarget)
+			{
+				*someParameterChangeTarget *= 0.9f;
+				canvasManager.updateInstrumentSettings();
+			}
+			break;
+
 	}
 }
 

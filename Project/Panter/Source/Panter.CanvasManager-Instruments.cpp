@@ -131,6 +131,7 @@ void CanvasManager::updateInstrument_brightnessContrastGammaFilter()
 	device->setTexture(layerTextures[0]);
 	device->setCustomEffectConstants(settings);
 
+	device->clear(tempTexture, 0);
 	device->draw2D(PrimitiveType::TriangleList, brightnessContrastGammaEffect,
 		quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
 }
@@ -176,6 +177,7 @@ BrightnessContrastGammaFilterSettings& CanvasManager::setInstrument_brightnessCo
 	instrumentSettings.brightnessContrastGamma.brightness = brightness;
 	instrumentSettings.brightnessContrastGamma.contrast = contrast;
 	instrumentSettings.brightnessContrastGamma.gamma = gamma;
+	instrumentState.brightnessContrastGammaFilter.outOfDate = true;
 	currentInstrument = Instrument::BrightnessContrastGammaFilter;
 
 	return instrumentSettings.brightnessContrastGamma;

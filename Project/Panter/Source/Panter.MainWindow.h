@@ -17,6 +17,7 @@ namespace Panter
 
 		XLib::Color currentColor = 0;
 		XLib::Color *currentColorChangeTarget = nullptr;
+		float32 *someParameterChangeTarget = nullptr;
 
 		CanvasManager canvasManager;
 
