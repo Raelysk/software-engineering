@@ -145,9 +145,19 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 	// canvas
 	for (uint16 i = 0; i < layerCount; i++)
 	{
-		device->setTexture(layerTextures[i]);
-		device->draw2D(PrimitiveType::TriangleList, Effect::TexturedUnorm,
-			quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
+		if (!disableCurrentLayerRendering)
+		{
+			device->setTexture(layerTextures[i]);
+			device->draw2D(PrimitiveType::TriangleList, Effect::TexturedUnorm,
+				quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
+		}
+
+		if (enableTempLayerRendering)
+		{
+			device->setTexture(tempTexture);
+			device->draw2D(PrimitiveType::TriangleList, Effect::TexturedUnorm,
+				quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
+		}
 	}
 
 	// canvas space foreground

@@ -41,7 +41,7 @@ namespace Panter
 
 		//using Layers = XLib::Vector<XLib::Graphics::TextureRenderTarget>;
 
-		enum class Instrument
+		enum class Instrument : uint8
 		{
 			None = 0,
 
@@ -87,6 +87,8 @@ namespace Panter
 		rectu32 selection = {};
 		uint16 currentLayer = 0;
 		Instrument currentInstrument = Instrument::None;
+		bool disableCurrentLayerRendering = false;
+		bool enableTempLayerRendering = false;
 
 		union
 		{

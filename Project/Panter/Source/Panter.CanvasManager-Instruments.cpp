@@ -137,12 +137,18 @@ void CanvasManager::updateInstrument_brightnessContrastGammaFilter()
 
 void CanvasManager::setInstrument_selection()
 {
+	disableCurrentLayerRendering = false;
+	enableTempLayerRendering = false;
+
 	instrumentState.selection.inProgress = false;
 	currentInstrument = Instrument::Selection;
 }
 
 PencilSettings& CanvasManager::setInstrument_pencil(Color color)
 {
+	disableCurrentLayerRendering = false;
+	enableTempLayerRendering = false;
+
 	instrumentSettings.pencil.color = color;
 	currentInstrument = Instrument::Pencil;
 
@@ -151,6 +157,9 @@ PencilSettings& CanvasManager::setInstrument_pencil(Color color)
 
 BrushSettings& CanvasManager::setInstrument_brush(Color color, float32 width)
 {
+	disableCurrentLayerRendering = false;
+	enableTempLayerRendering = false;
+
 	instrumentSettings.brush.color = color;
 	instrumentSettings.brush.width = width;
 	currentInstrument = Instrument::Brush;
@@ -161,6 +170,9 @@ BrushSettings& CanvasManager::setInstrument_brush(Color color, float32 width)
 BrightnessContrastGammaFilterSettings& CanvasManager::setInstrument_brightnessContrastGammaFilter(
 	float32 brightness, float32 contrast, float32 gamma)
 {
+	disableCurrentLayerRendering = true;
+	enableTempLayerRendering = true;
+
 	instrumentSettings.brightnessContrastGamma.brightness = brightness;
 	instrumentSettings.brightnessContrastGamma.contrast = contrast;
 	instrumentSettings.brightnessContrastGamma.gamma = gamma;
