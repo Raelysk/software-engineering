@@ -17,7 +17,7 @@ void MainWindow::onCreate(CreationArgs& args)
 	device.initialize();
 	device.createWindowRenderTarget(windowRenderTarget, getHandle(), args.width, args.height);
 
-	canvasManager.initialize(device, { 1280, 720 });
+	canvasManager.initialize(device, { 720, 1280 });
 	canvasManager.createLayer();
 	canvasManager.clearLayer(0, 0xFFFFFF_rgb);
 
