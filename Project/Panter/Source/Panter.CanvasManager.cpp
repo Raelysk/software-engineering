@@ -39,6 +39,8 @@ void CanvasManager::initialize(Device& device, uint32x2 canvasSize)
 
 	device.createCustomEffect(brightnessContrastGammaEffect, Effect::TexturedUnorm,
 		EffectShaders::BrightnessContrastGammaPS.data, EffectShaders::BrightnessContrastGammaPS.size);
+	device.createCustomEffect(checkerboardEffect, Effect::TexturedUnorm,
+		EffectShaders::CheckerboardPS.data, EffectShaders::CheckerboardPS.size);
 
 	centerView();
 	selection = { 0, 0, canvasSize };
@@ -215,6 +217,9 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 	geometryGenerator.drawVerticalGradientRect(rectf32(viewport), 0x0D3863_rgb, 0x5682AD_rgb);
 	geometryGenerator.drawRectShadow(viewCanvasRect, 12.0f, 0x00000050_rgba);
 	geometryGenerator.flush();
+
+	device->draw2D(PrimitiveType::TriangleList, checkerboardEffect,
+		quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
 
 	// canvas
 	for (uint16 i = 0; i < layerCount; i++)

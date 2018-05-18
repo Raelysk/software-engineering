@@ -39,7 +39,9 @@ namespace Panter
 		XLib::Graphics::Device *device = nullptr;
 		XLib::Graphics::Buffer quadVertexBuffer;
 		XLib::Graphics::GeometryGenerator geometryGenerator;
+
 		XLib::Graphics::CustomEffect brightnessContrastGammaEffect;
+		XLib::Graphics::CustomEffect checkerboardEffect;
 
 		XLib::Graphics::TextureRenderTarget layerTextures[16];
 		XLib::Graphics::TextureRenderTarget tempTexture;

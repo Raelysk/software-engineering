@@ -13,6 +13,7 @@ namespace Panter
 	class EffectShaders abstract final
 	{
 	public:
-		static ShaderData BrightnessContrastGammaPS;
+		static const ShaderData BrightnessContrastGammaPS;
+		static const ShaderData CheckerboardPS;
 	};
 }
