@@ -217,8 +217,10 @@ namespace XLib::Graphics
 		void setTexture(Texture& texture, uint32 slot = 0);
 		void setCustomEffectConstants(const void* data, uint32 size);
 
-		void updateBuffer(Buffer& buffer, const void* srcData, uint32 baseOffset, uint32 size);
-		void updateTexture(Texture& texture, const rectu32& region, const void* srcData, uint32 srcDataStride = 0);
+		void uploadBuffer(Buffer& buffer, const void* srcData, uint32 baseOffset, uint32 size);
+		void uploadTexture(Texture& texture, const rectu32& region, const void* srcData, uint32 srcDataStride = 0);
+		void downloadTexture(Texture& texture, const rectu32& region, void* dstData, uint32 dstDataSize = 0);
+		void copyTexture(Texture& dstTexture, Texture& srcTexture, uint32x2 dstLocation, const rectu32& srcRegion);
 
 		void draw2D(PrimitiveType primitiveType, Effect effect, Buffer& vertexBuffer,
 			uint32 baseOffset, uint32 vertexStride, uint32 vertexCount);

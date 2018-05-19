@@ -126,7 +126,7 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 		vertices[4] = { { viewCanvasRect.right, viewCanvasRect.top    }, { 0xFFFF, 0      } };
 		vertices[5] = { { viewCanvasRect.right, viewCanvasRect.bottom }, { 0xFFFF, 0xFFFF } };
 
-		device->updateBuffer(quadVertexBuffer, vertices, 0, sizeof(vertices));
+		device->uploadBuffer(quadVertexBuffer, vertices, 0, sizeof(vertices));
 	}
 
 	device->setRenderTarget(target);
@@ -249,7 +249,7 @@ void CanvasManager::uploadLayerRegion(uint16 dstLayerIndex, const rectu32& dstRe
 {
 	Debug::CrashCondition(dstLayerIndex >= layerCount, DbgMsgFmt("invalid layer index"));
 
-	device->updateTexture(layerTextures[dstLayerIndex], dstRegion, srcData, srcDataStride);
+	device->uploadTexture(layerTextures[dstLayerIndex], dstRegion, srcData, srcDataStride);
 }
 
 // View handling ================================================================================//

@@ -8,6 +8,8 @@
 #include <XLib.Graphics.h>
 #include <XLib.Graphics.GeometryGenerator.h>
 
+// TODO: Handle current layer change during filter preview.
+
 namespace Panter
 {
 	struct PencilSettings
@@ -66,6 +68,7 @@ namespace Panter
 		struct InstrumentState_BrightnessContrastGammaFilter
 		{
 			bool outOfDate;
+			bool apply;
 		};
 
 	private: // data

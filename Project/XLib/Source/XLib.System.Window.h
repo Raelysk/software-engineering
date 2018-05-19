@@ -12,6 +12,7 @@ namespace XLib
 		MouseLeftButton = 0x01,
 		MouseMiddleButton = 0x04,
 		MouseRightButton = 0x02,
+		Enter = 0x0D,
 		Left = 0x25,
 		Up = 0x26,
 		Right = 0x27,

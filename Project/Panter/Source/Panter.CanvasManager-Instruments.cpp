@@ -106,34 +106,45 @@ void CanvasManager::updateInstrument_brightnessContrastGammaFilter()
 	InstrumentState_BrightnessContrastGammaFilter &state = instrumentState.brightnessContrastGammaFilter;
 	BrightnessContrastGammaFilterSettings &settings = instrumentSettings.brightnessContrastGamma;
 
-	if (!state.outOfDate)
-		return;
-	state.outOfDate = false;
-
+	if (state.outOfDate)
 	{
-		float32x2 canvasSizeF(canvasSize);
+		state.outOfDate = false;
 
-		VertexTexturedUnorm2D vertices[6];
-		vertices[0] = { { 0.0f,          0.0f          }, { 0,      0      } };
-		vertices[1] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
-		vertices[2] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
-		vertices[3] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
-		vertices[4] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
-		vertices[5] = { { canvasSizeF.x, canvasSizeF.y }, { 0xFFFF, 0xFFFF } };
+		{
+			float32x2 canvasSizeF(canvasSize);
 
-		device->updateBuffer(quadVertexBuffer, vertices, 0, sizeof(vertices));
+			VertexTexturedUnorm2D vertices[6];
+			vertices[0] = { { 0.0f,          0.0f          }, { 0,      0      } };
+			vertices[1] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
+			vertices[2] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
+			vertices[3] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
+			vertices[4] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
+			vertices[5] = { { canvasSizeF.x, canvasSizeF.y }, { 0xFFFF, 0xFFFF } };
+
+			device->uploadBuffer(quadVertexBuffer, vertices, 0, sizeof(vertices));
+		}
+
+		device->setRenderTarget(tempTexture);
+		device->setViewport(rectu32(0, 0, canvasSize));
+		device->setScissorRect(selection);
+		device->setTransform2D(Matrix2x3::Identity());
+		device->setTexture(layerTextures[currentLayer]);
+		device->setCustomEffectConstants(settings);
+
+		device->clear(tempTexture, 0);
+		device->draw2D(PrimitiveType::TriangleList, brightnessContrastGammaEffect,
+			quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
 	}
 
-	device->setRenderTarget(tempTexture);
-	device->setViewport(rectu32(0, 0, canvasSize));
-	device->setScissorRect(selection);
-	device->setTransform2D(Matrix2x3::Identity());
-	device->setTexture(layerTextures[0]);
-	device->setCustomEffectConstants(settings);
+	if (state.apply)
+	{
+		state.apply = false;
 
-	device->clear(tempTexture, 0);
-	device->draw2D(PrimitiveType::TriangleList, brightnessContrastGammaEffect,
-		quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
+		disableCurrentLayerRendering = false;
+		enableTempLayerRendering = false;
+
+		device->copyTexture(layerTextures[currentLayer], tempTexture, { 0, 0 }, { 0, 0, canvasSize });
+	}
 }
 
 void CanvasManager::setInstrument_selection()
@@ -178,6 +189,7 @@ BrightnessContrastGammaFilterSettings& CanvasManager::setInstrument_brightnessCo
 	instrumentSettings.brightnessContrastGamma.contrast = contrast;
 	instrumentSettings.brightnessContrastGamma.gamma = gamma;
 	instrumentState.brightnessContrastGammaFilter.outOfDate = true;
+	instrumentState.brightnessContrastGammaFilter.apply = false;
 	currentInstrument = Instrument::BrightnessContrastGammaFilter;
 
 	return instrumentSettings.brightnessContrastGamma;
@@ -189,11 +201,18 @@ void CanvasManager::updateInstrumentSettings()
 	{
 		case Instrument::BrightnessContrastGammaFilter:
 			instrumentState.brightnessContrastGammaFilter.outOfDate = true;
+			disableCurrentLayerRendering = true;
+			enableTempLayerRendering = true;
 			break;
 	}
 }
 
 void CanvasManager::applyInstrument()
 {
-
+	switch (currentInstrument)
+	{
+		case Instrument::BrightnessContrastGammaFilter:
+			instrumentState.brightnessContrastGammaFilter.apply = true;
+			break;
+	}
 }

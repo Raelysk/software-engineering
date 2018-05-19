@@ -126,6 +126,9 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 			}
 			break;
 
+		case VirtualKey::Enter:
+			canvasManager.applyInstrument();
+			break;
 	}
 }
 
