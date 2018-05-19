@@ -421,9 +421,9 @@ void Panter::MainWindow::ProcessGui() {
             } else if (currentInstrument == Instrument::BrightnessContrastGammaFilter) {
                 auto& settings = canvasManager.getInstrumentSettings_brightnessContrastGammaFilter();
 
-                ImGui::InputFloat("Brightness", &settings.brightness);
-                ImGui::InputFloat("Contrast", &settings.contrast);
-                ImGui::InputFloat("Gamma", &settings.gamma);
+                ImGui::SliderFloat("Brightness", &settings.brightness, 0.0f, 1.0f);
+                ImGui::SliderFloat("Contrast", &settings.contrast, 0.0f, 10.0f);
+                ImGui::SliderFloat("Gamma", &settings.gamma, 0.0f, 10.0f);
 
                 canvasManager.updateInstrumentSettings();
 
