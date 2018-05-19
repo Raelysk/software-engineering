@@ -190,6 +190,8 @@ void MainWindow::onResize(ResizingArgs& args)
 
 	width = args.width;
 	height = args.height;
+
+	updateAndRedraw();
 }
 
 void MainWindow::onCharacter(wchar character) {
@@ -213,7 +215,6 @@ void Panter::MainWindow::openFile() {
         canvasManager.uploadLayerRegion(canvasManager.getCurrentLayerId(), dstRegion, imageData, width * 4);
     }
 }
-
 
 void MainWindow::updateAndRedraw()
 {

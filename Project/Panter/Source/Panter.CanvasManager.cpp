@@ -329,12 +329,12 @@ void CanvasManager::uploadLayerRegion(uint16 dstLayerIndex, const rectu32& dstRe
 	device->uploadTexture(layerTextures[dstLayerIndex], dstRegion, srcData, srcDataStride);
 }
 
-// View handling ================================================================================//
-
 void CanvasManager::clearLayer(uint16 layerIndex, Color color)
 {
 	device->clear(layerTextures[layerIndex], color);
 }
+
+// View handling ================================================================================//
 
 void CanvasManager::centerView()
 {

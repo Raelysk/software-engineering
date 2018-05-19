@@ -114,16 +114,7 @@ void CanvasManager::updateInstrument_line()
 			if (state.endPosition != currentPosition)
 			{
 				state.endPosition = currentPosition;
-
-				device->clear(tempTexture, 0xFFFFFF00_rgba);
-				device->setRenderTarget(tempTexture);
-				device->setViewport(rectu32(0, 0, canvasSize));
-				device->setScissorRect(selection);
-				device->setTransform2D(Matrix2x3::Identity());
-
-				geometryGenerator.drawLine(state.startPosition, state.endPosition, settings.width,
-					settings.color, settings.roundedEnd, settings.roundedEnd);
-				geometryGenerator.flush();
+				goto label_rendering;
 			}
 		}
 		else
@@ -136,7 +127,26 @@ void CanvasManager::updateInstrument_line()
 	else
 	{
 		state.inProgress = false;
+
+		if (state.outOfDate)
+		{
+			state.outOfDate = false;
+			goto label_rendering;
+		}
 	}
+
+	return;
+
+label_rendering:
+	device->clear(tempTexture, 0xFFFFFF00_rgba);
+	device->setRenderTarget(tempTexture);
+	device->setViewport(rectu32(0, 0, canvasSize));
+	device->setScissorRect(selection);
+	device->setTransform2D(Matrix2x3::Identity());
+
+	geometryGenerator.drawLine(state.startPosition, state.endPosition, settings.width,
+		settings.color, settings.roundedStart, settings.roundedEnd);
+	geometryGenerator.flush();
 }
 
 void CanvasManager::updateInstrument_brightnessContrastGammaFilter()
@@ -238,6 +248,7 @@ LineSettings& CanvasManager::setInstrument_line(XLib::Color color, float32 width
 	instrumentSettings.line.roundedStart = roundedStart;
 	instrumentSettings.line.roundedEnd = roundedEnd;
 	instrumentState.line.inProgress = false;
+	instrumentState.line.outOfDate = false;
 	currentInstrument = Instrument::Line;
 
 	return instrumentSettings.line;
@@ -263,6 +274,10 @@ void CanvasManager::updateInstrumentSettings()
 {
 	switch (currentInstrument)
 	{
+		case Instrument::Line:
+			instrumentState.line.outOfDate = true;
+			break;
+
 		case Instrument::BrightnessContrastGammaFilter:
 			instrumentState.brightnessContrastGammaFilter.outOfDate = true;
 			disableCurrentLayerRendering = true;

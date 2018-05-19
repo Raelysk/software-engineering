@@ -78,6 +78,7 @@ namespace Panter
 			float32x2 startPosition;
 			float32x2 endPosition;
 			bool inProgress;
+			bool outOfDate;
 		};
 
 		struct InstrumentState_BrightnessContrastGammaFilter
@@ -178,6 +179,7 @@ namespace Panter
 		uint16 createLayer(uint16 insertAtIndex = uint16(-1));
 		void removeLayer(uint16 index);
 		//void moveLayer(uint16 fromIndex, uint16 toIndex);
+
 		void uploadLayerRegion(uint16 dstLayerIndex, const rectu32& dstRegion,
 			const void* srcData, uint32 srcDataStride = 0);
 		void downloadLayerRegion(uint16 srcLayerIndex, const rectu32& srcRegion,
