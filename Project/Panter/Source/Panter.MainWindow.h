@@ -24,7 +24,9 @@ namespace Panter
 		CanvasManager canvasManager;
         
         ImVec4 mainColor = {0.0f, 0.0f, 0.0f, 1.0f};
-        ImVec4 secondaryColor = {0.0f, 0.0f, 0.0f, 0.0f};
+        ImVec4 secondaryColor = {1.0f, 1.0f, 1.0f, 1.0f};
+
+        bool isMainColorPickerChoosen = true;
 
 	private: // code
         virtual void onCreate(XLib::CreationArgs& args) override;

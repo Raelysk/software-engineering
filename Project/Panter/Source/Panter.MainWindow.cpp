@@ -344,29 +344,21 @@ void Panter::MainWindow::ProcessGui() {
     }
 
     {
-        ImGui::SetNextWindowPos(ImVec2(0, 0.7f * height), ImGuiCond_Once);
+        ImGui::SetNextWindowPos(ImVec2(0, 0.6f * height), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(-1, -1), ImGuiCond_Always);
         ImGui::Begin("Color picker", &showColorPicker, windowFlags);
 
-        ImGui::Text("Main color:      ");
-        ImGui::SameLine();
         if (ImGui::ColorButton("Main color", mainColor)) {
-            ImGui::OpenPopup("Main color picker");
+            isMainColorPickerChoosen = true;
         }
-        if (ImGui::BeginPopup("Main color picker")) {
-            ImGui::ColorPicker4("Main color", (float*)&mainColor);
-            ImGui::EndPopup();
-        }
-
-        ImGui::Text("Secondary color: ");
         ImGui::SameLine();
         if (ImGui::ColorButton("Secondary color", secondaryColor)) {
-            ImGui::OpenPopup("Secondary color picker");
+            isMainColorPickerChoosen = false;
         }
-        if (ImGui::BeginPopup("Secondary color picker")) {
-            ImGui::ColorPicker4("Secondary color", (float*)&secondaryColor);
-            ImGui::EndPopup();
-        }
+
+        ImVec4* changedColor = isMainColorPickerChoosen ? &mainColor : &secondaryColor;
+
+        ImGui::ColorPicker4(isMainColorPickerChoosen? "Main" : "Second", (float*)changedColor);
 
         ImGui::End();
     }
