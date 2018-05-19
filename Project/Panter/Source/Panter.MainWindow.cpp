@@ -1,9 +1,9 @@
 #include <map>
 
-#include "SystemUtil.h"
-
 #include "Panter.MainWindow.h"
 #include "Panter.ImageLoader.h"
+
+#include "SystemUtil.h"
 
 #include "imgui\imgui_impl_dx11.h"
 
@@ -24,7 +24,7 @@ inline XLib::Color toRGBA(const ImVec4& color) {
     return XLib::Color(color.x * 255.0f, color.y * 255.0f, color.z * 255.0f, color.w * 255.0f);
 }
 
-std::map<Instrument, std::string> kInstrumentNames = {
+std::map<Instrument, const char*> kInstrumentNames = {
     {Instrument::None, "None"},
     {Instrument::Selection, "Selection"},
     {Instrument::Pencil, "Pencil"},
@@ -269,15 +269,13 @@ void Panter::MainWindow::ProcessGui() {
     ImGuiWindowFlags windowFlags = 0;
     windowFlags |= ImGuiWindowFlags_NoTitleBar;
     windowFlags |= ImGuiWindowFlags_NoMove;
-    windowFlags |= ImGuiWindowFlags_NoScrollbar;
     windowFlags |= ImGuiWindowFlags_NoResize;
     windowFlags |= ImGuiWindowFlags_NoCollapse;
 
-    static bool showMain = true;
     static bool showInstrument = true;
     static bool showInstrumentProperties = true;
-    static bool showColorPicker = true;
-    static bool showFilterOptions = false;
+    static bool showLayers = true;
+    static bool showNewCanvasProperties = true;
 
     const uint16 widgetsXOffset = 5;
     const uint16 widgetsYOffset = 25;
@@ -302,6 +300,9 @@ void Panter::MainWindow::ProcessGui() {
             if (ImGui::BeginMenu("Tools")) {
                 if (ImGui::MenuItem("Center view")) {
                     canvasManager.centerView();
+                }
+                if (ImGui::MenuItem("Reset selection")) {
+                    canvasManager.resetSelection();
                 }
                 ImGui::EndMenu();
             }
@@ -331,7 +332,7 @@ void Panter::MainWindow::ProcessGui() {
     {
         ImGui::SetNextWindowPos(ImVec2(widgetsXOffset, widgetsYOffset), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(-1, -1), ImGuiCond_Always); //-1 in size means adjust to components size
-        ImGui::Begin("Instruments", &showMain, windowFlags);
+        ImGui::Begin("Instruments", &showInstrument, windowFlags);
         if (ImGui::Button("Select", ImVec2(buttonSize, buttonSize)) && currentInstrument != Instrument::Selection) {
             canvasManager.setInstrument_selection();
         }
@@ -368,7 +369,7 @@ void Panter::MainWindow::ProcessGui() {
 
         ImGui::SetNextWindowPos(ImVec2(windowXOffset - widgetsXOffset, widgetsYOffset), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(windowXSize, -1), ImGuiCond_Always);
-        ImGui::Begin("Color picker", &showColorPicker, windowFlags);
+        ImGui::Begin("Instrument properties", &showInstrumentProperties, windowFlags);
 
         ImGui::BeginGroup();
         
@@ -412,7 +413,7 @@ void Panter::MainWindow::ProcessGui() {
         if (currentInstrument != Instrument::None) {
             ImGui::Separator();
 
-            ImGui::Text(kInstrumentNames[currentInstrument].c_str());
+            ImGui::Text(kInstrumentNames[currentInstrument]);
 
             if (currentInstrument == Instrument::Selection) {
                 ImGui::Button("Crop", ImVec2(buttonSize, buttonSize));
@@ -446,6 +447,80 @@ void Panter::MainWindow::ProcessGui() {
         }
 
         ImGui::End();
+    }
+
+    {
+        ImGui::SetNextWindowPos(ImVec2(width * 0.85f - widgetsXOffset, height * 0.7f), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(width * 0.15f, height * 0.3f), ImGuiCond_Always);
+        ImGui::Begin("Layers", &showLayers, windowFlags);
+        
+        uint16 numberOfLayers = canvasManager.getLayerCount();
+        uint16 currentLayerId = canvasManager.getCurrentLayerId();
+
+        // New / Layer up /Layer down /Delete
+        if (ImGui::Button("Add layer")) {
+            canvasManager.createLayer();
+
+            numberOfLayers = canvasManager.getLayerCount();
+            currentLayerId = numberOfLayers - 1;
+            canvasManager.setCurrentLayer(currentLayerId);
+
+            layerNames[currentLayerId] = "Layer " + std::to_string(++lastLayerNumber);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Remove layer")) {
+            canvasManager.removeLayer(currentLayerId);
+
+            for (int i = currentLayerId; i < numberOfLayers - 1; ++i) {
+                layerNames[i] = std::move(layerNames[i + 1]);
+            }
+
+            numberOfLayers = canvasManager.getLayerCount();
+            currentLayerId = canvasManager.getCurrentLayerId();
+        }
+        ImGui::Separator();
+        
+        ImGui::BeginGroup();
+
+        for (int i = 0; i < numberOfLayers; ++i) {
+            ImGui::PushID(i);
+            if (ImGui::Selectable("", (i == currentLayerId))) {
+                currentLayerId = i;
+                canvasManager.setCurrentLayer(currentLayerId);
+            }
+            ImGui::PopID();
+
+            ImGui::SameLine();
+            ImGui::Text(layerNames[i].c_str());
+        }
+
+        ImGui::EndGroup();
+
+        ImGui::Separator();
+        if (ImGui::Button("Up")) {
+            if (currentLayerId != numberOfLayers - 1) {
+                /*
+                canvasManager.moveLayer(currentLayerId, currentLayerId + 1);
+                std::swap(layerNames[currentLayerId], layerNames[currentLayerId + 1]);
+                ++currentLayerId;
+                canvasManager.setCurrentLayer(currentLayerId);
+                */
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Down")) {
+            if (currentLayerId != 0) {
+                /*
+                canvasManager.moveLayer(currentLayerId, currentLayerId - 1);
+                std::swap(layerNames[currentLayerId], layerNames[currentLayerId - 1]);
+                --currentLayerId;
+                canvasManager.setCurrentLayer(currentLayerId);
+                */
+            }
+        }
+
+        ImGui::End();
+
     }
 
     ImGui::Render();

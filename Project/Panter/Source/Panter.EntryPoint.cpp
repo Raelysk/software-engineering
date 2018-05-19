@@ -1,7 +1,7 @@
+#include "Panter.MainWindow.h"
+
 #include <XLib.Program.h>
 #include <XLib.Graphics.h>
-
-#include "Panter.MainWindow.h"
 
 using namespace XLib;
 using namespace XLib::Graphics;

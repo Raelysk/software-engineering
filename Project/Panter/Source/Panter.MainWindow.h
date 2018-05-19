@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 #include <XLib.Types.h>
 #include <XLib.System.Window.h>
@@ -29,6 +30,9 @@ namespace Panter
         ImVec4 colorPalette[32];
 
         bool isMainColorPickerChoosen = true;
+
+        std::string layerNames[16] = {"Layer 0"};
+        uint16 lastLayerNumber = 0;
 
 	private: // code
         virtual void onCreate(XLib::CreationArgs& args) override;

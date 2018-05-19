@@ -204,6 +204,7 @@ namespace Panter
 		inline uint32 getCanvasHeight() const { return canvasSize.y; }
 		inline float32 getCanvasScale() const { return canvasScale; }
 		inline uint16 getLayerCount() const { return layerCount; }
+        inline uint16 getCurrentLayerId() const { return currentLayer; }
 		inline bool isInitialized() const { return device != nullptr; }
 	};
 }
