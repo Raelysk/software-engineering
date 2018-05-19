@@ -35,9 +35,82 @@ void CanvasManager::destroy()
 
 }
 
-void CanvasManager::resize(uint32x2 newCanvasSize)
+void CanvasManager::resizeDiscardingContents(uint32x2 newCanvasSize)
 {
+	if (canvasSize == newCanvasSize)
+		return;
 
+	for (uint32 i = 0; i < layerCount; i++)
+	{
+		layerTextures[i].destroy();
+		device->createTextureRenderTarget(layerTextures[i], newCanvasSize.x, newCanvasSize.y);
+	}
+
+	tempTexture.destroy();
+	device->createTextureRenderTarget(tempTexture, newCanvasSize.x, newCanvasSize.y);
+
+	canvasSize = newCanvasSize;
+	resetSelection();
+}
+
+void CanvasManager::resizeSavingContents(const rects32& newCanvasRect, Color fillColor)
+{
+	if (newCanvasRect.left == 0 && newCanvasRect.top == 0 &&
+		uint32x2(newCanvasRect.rightBottom) == canvasSize)
+	{
+		return;
+	}
+
+	uint32x2 newCanvasSize = newCanvasRect.getSize();
+
+	rects32 copiedContentsRegion =
+	{
+		max<sint32>(newCanvasRect.left, 0),
+		max<sint32>(newCanvasRect.top, 0),
+		min<sint32>(newCanvasRect.right, canvasSize.x),
+		min<sint32>(newCanvasRect.bottom, canvasSize.y)
+	};
+	uint32x2 copiedContentsLocation =
+	{
+		uint32(max<sint32>(-newCanvasRect.left, 0)),
+		uint32(max<sint32>(-newCanvasRect.top, 0)),
+	};
+
+	if (copiedContentsRegion.getWidth() <= 0 || copiedContentsRegion.getHeight() <= 0)
+	{
+		for (uint32 i = 0; i < layerCount; i++)
+		{
+			layerTextures[i].destroy();
+			device->createTextureRenderTarget(layerTextures[i], newCanvasSize.x, newCanvasSize.y);
+			device->clear(layerTextures[i], fillColor);
+		}
+	}
+	else
+	{
+		uint32x2 copiedContentsSize = uint32x2(copiedContentsRegion.getSize());
+
+		bool blankSpaceLeft = copiedContentsSize != newCanvasSize;
+
+		for (uint32 i = 0; i < layerCount; i++)
+		{
+			device->copyTexture(tempTexture, layerTextures[i],
+				{ 0, 0 }, rectu32(copiedContentsRegion));
+			layerTextures[i].destroy();
+
+			device->createTextureRenderTarget(layerTextures[i], newCanvasSize.x, newCanvasSize.y);
+
+			if (blankSpaceLeft)
+				device->clear(layerTextures[i], fillColor);
+			device->copyTexture(layerTextures[i], tempTexture,
+				copiedContentsLocation, { 0, 0, copiedContentsSize });
+		}
+	}
+
+	tempTexture.destroy();
+	device->createTextureRenderTarget(tempTexture, newCanvasSize.x, newCanvasSize.y);
+
+	canvasSize = newCanvasSize;
+	resetSelection();
 }
 
 void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)

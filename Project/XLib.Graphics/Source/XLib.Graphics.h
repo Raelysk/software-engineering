@@ -105,7 +105,10 @@ namespace XLib::Graphics
 		inline ID3D11Texture2D* getD3D11Texture2D() { return d3dTexture; }
 
 	public:
+		Texture() = default;
+		~Texture() = default;
 
+		inline void destroy() { this->~Texture(); }
 	};
 
 	class RenderTarget abstract : public XLib::NonCopyable
@@ -119,7 +122,10 @@ namespace XLib::Graphics
 		bool initialize(ID3D11Device* d3dDevice, ID3D11Texture2D* d3dTexture);
 
 	public:
+		RenderTarget() = default;
+		~RenderTarget() = default;
 
+		inline void destroy() { this->~RenderTarget(); }
 	};
 
 	class TextureRenderTarget : public Texture, public RenderTarget
@@ -131,7 +137,10 @@ namespace XLib::Graphics
 			const void* initialData, uint32 initialDataStride);
 
 	public:
+		TextureRenderTarget() = default;
+		~TextureRenderTarget() = default;
 
+		inline void destroy() { this->~TextureRenderTarget(); }
 	};
 
 	class WindowRenderTarget : public RenderTarget
@@ -148,6 +157,8 @@ namespace XLib::Graphics
 	public:
 		WindowRenderTarget() = default;
 		~WindowRenderTarget() = default;
+
+		inline void destroy() { this->~WindowRenderTarget(); }
 
 		void present(bool sync = true);
 	};

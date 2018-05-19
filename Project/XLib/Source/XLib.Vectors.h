@@ -45,11 +45,11 @@ struct vec4
 };
 
 template <typename type1, typename type2> constexpr inline bool operator == (const vec2<type1>& a, const vec2<type2>& b) { return a.x == b.x && a.y == b.y; }
-template <typename type1, typename type2> constexpr inline bool operator != (const vec2<type1>& a, const vec2<type2>& b) { return a.x != b.x && a.y != b.y; }
+template <typename type1, typename type2> constexpr inline bool operator != (const vec2<type1>& a, const vec2<type2>& b) { return a.x != b.x || a.y != b.y; }
 template <typename type1, typename type2> constexpr inline bool operator == (const vec3<type1>& a, const vec3<type2>& b) { return a.x == b.x && a.y == b.y && a.z == b.z; }
-template <typename type1, typename type2> constexpr inline bool operator != (const vec3<type1>& a, const vec3<type2>& b) { return a.x != b.x && a.y != b.y && a.z != b.z; }
+template <typename type1, typename type2> constexpr inline bool operator != (const vec3<type1>& a, const vec3<type2>& b) { return a.x != b.x || a.y != b.y || a.z != b.z; }
 template <typename type1, typename type2> constexpr inline bool operator == (const vec4<type1>& a, const vec4<type2>& b) { return a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w; }
-template <typename type1, typename type2> constexpr inline bool operator != (const vec4<type1>& a, const vec4<type2>& b) { return a.x != b.x && a.y != b.y && a.z != b.z && a.w != b.w; }
+template <typename type1, typename type2> constexpr inline bool operator != (const vec4<type1>& a, const vec4<type2>& b) { return a.x != b.x || a.y != b.y || a.z != b.z || a.w != b.w; }
 
 template <typename type>
 struct rectvar

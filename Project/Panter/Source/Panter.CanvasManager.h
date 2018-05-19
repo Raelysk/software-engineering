@@ -156,7 +156,8 @@ namespace Panter
 		void initialize(XLib::Graphics::Device& device, uint32x2 canvasSize);
 		void destroy();
 
-		void resize(uint32x2 newCanvasSize);
+		void resizeDiscardingContents(uint32x2 newCanvasSize);
+		void resizeSavingContents(const rects32& newCanvasRect, XLib::Color fillColor = 0);
 		void updateAndDraw(XLib::Graphics::RenderTarget& target, const rectu32& viewport /* TODO: move from here */);
 		//void setViewport();
 
@@ -202,9 +203,13 @@ namespace Panter
 		inline uint32x2 getCanvasSize() const { return canvasSize; }
 		inline uint32 getCanvasWidth() const { return canvasSize.x; }
 		inline uint32 getCanvasHeight() const { return canvasSize.y; }
-		inline float32 getCanvasScale() const { return canvasScale; }
+		
 		inline uint16 getLayerCount() const { return layerCount; }
         inline uint16 getCurrentLayerId() const { return currentLayer; }
+		inline const rectu32& getSelection() const { return selection; }
+
+		inline float32 getCanvasScale() const { return canvasScale; }
+		
 		inline bool isInitialized() const { return device != nullptr; }
 	};
 }

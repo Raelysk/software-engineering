@@ -61,12 +61,8 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 
 	switch (key)
 	{
-		case VirtualKey('C'):
+		case VirtualKey('V'):
 			canvasManager.centerView();
-			break;
-
-		case VirtualKey('R'):
-			canvasManager.resetSelection();
 			break;
 
 		case VirtualKey('S'):
@@ -147,6 +143,14 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 
 		case VirtualKey('Q'):
 			canvasManager.resetSelection();
+			break;
+
+		case VirtualKey('K'):
+			canvasManager.resizeSavingContents({ -50, -100, 1100, 700 }, 0x00FF00_rgb);
+			break;
+
+		case VirtualKey('C'):
+			canvasManager.resizeSavingContents(canvasManager.getSelection());
 			break;
 
 		case VirtualKey::Up:
