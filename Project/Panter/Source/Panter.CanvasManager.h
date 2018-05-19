@@ -23,6 +23,14 @@ namespace Panter
 		float32 width;
 	};
 
+	struct LineSettings
+	{
+		XLib::Color color;
+		float32 width;
+		bool roundedStart;
+		bool roundedEnd;
+	};
+
 	struct BrightnessContrastGammaFilterSettings
 	{
 		float32 brightness;
@@ -41,6 +49,7 @@ namespace Panter
         Selection,
         Pencil,
         Brush,
+		Line,
 
         BrightnessContrastGammaFilter,
         GaussianFilter,
@@ -56,13 +65,20 @@ namespace Panter
 
 		struct InstrumentState_Selection
 		{
-			bool inProgress;
 			uint32x2 firstCornerPosition;
+			bool inProgress;
 		};
 
 		struct InstrumentState_Pencil { };
 
 		struct InstrumentState_Brush { };
+
+		struct InstrumentState_Line
+		{
+			float32x2 startPosition;
+			float32x2 endPosition;
+			bool inProgress;
+		};
 
 		struct InstrumentState_BrightnessContrastGammaFilter
 		{
@@ -96,6 +112,7 @@ namespace Panter
 		{
 			PencilSettings pencil;
 			BrushSettings brush;
+			LineSettings line;
 			BrightnessContrastGammaFilterSettings brightnessContrastGamma;
 		} instrumentSettings;
 
@@ -104,6 +121,7 @@ namespace Panter
 			InstrumentState_Selection selection;
 			InstrumentState_Pencil pencil;
 			InstrumentState_Brush brush;
+			InstrumentState_Line line;
 			InstrumentState_BrightnessContrastGammaFilter brightnessContrastGammaFilter;
 		} instrumentState;
 
@@ -128,6 +146,7 @@ namespace Panter
 		void updateInstrument_selection();
 		void updateInstrument_pencil();
 		void updateInstrument_brush();
+		void updateInstrument_line();
 		void updateInstrument_brightnessContrastGammaFilter();
 
 	public:
@@ -147,18 +166,13 @@ namespace Panter
 
 		void resetInstrument();
 		void setInstrument_selection();
-		PencilSettings&	setInstrument_pencil(XLib::Color color);
-		BrushSettings&	setInstrument_brush(XLib::Color color, float32 width);
-		BrightnessContrastGammaFilterSettings&	setInstrument_brightnessContrastGammaFilter(float32 brightness, float32 contrast, float32 gamma);
+		PencilSettings&	setInstrument_pencil(XLib::Color color = 0);
+		BrushSettings&	setInstrument_brush(XLib::Color color = 0, float32 width = 1.0f);
+		LineSettings&	setInstrument_line(XLib::Color = 0, float32 width = 1.0f, bool roundedStart = false, bool roundedEnd = false);
+		BrightnessContrastGammaFilterSettings&	setInstrument_brightnessContrastGammaFilter(float32 brightness = 0.0f, float32 contrast = 1.0f, float32 gamma = 1.0f);
 		GaussianBlurFilterSettings&				setInstrument_gaussianBlurFilter();
 		void updateInstrumentSettings();
 		void applyInstrument();
-
-        PencilSettings&	getInstrumentSettings_pencil();
-        BrushSettings&	getInstrumentSettings_brush();
-        BrightnessContrastGammaFilterSettings&	getInstrumentSettings_brightnessContrastGammaFilter();
-        GaussianBlurFilterSettings&				getInstrumentSettings_gaussianBlurFilter();
-
 
 		uint16 createLayer(uint16 insertAtIndex = uint16(-1));
 		void removeLayer(uint16 index);
@@ -179,6 +193,11 @@ namespace Panter
 		//void redo();
 
         inline Instrument getCanvasInstrument() const { return currentInstrument; }
+		inline PencilSettings&	getInstrumentSettings_pencil()	{ return instrumentSettings.pencil; }
+		inline BrushSettings&	getInstrumentSettings_brush()	{ return instrumentSettings.brush; }
+		inline LineSettings&	getInstrumentSettings_line()	{ return instrumentSettings.line; }
+		inline BrightnessContrastGammaFilterSettings&	getInstrumentSettings_brightnessContrastGammaFilter() { return instrumentSettings.brightnessContrastGamma; }
+		inline GaussianBlurFilterSettings&				getInstrumentSettings_gaussianBlurFilter();
 
 		inline uint32x2 getCanvasSize() const { return canvasSize; }
 		inline uint32 getCanvasWidth() const { return canvasSize.x; }

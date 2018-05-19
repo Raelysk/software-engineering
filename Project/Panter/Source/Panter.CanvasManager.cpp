@@ -66,6 +66,10 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 				updateInstrument_brush();
 				break;
 
+			case Instrument::Line:
+				updateInstrument_line();
+				break;
+
 			case Instrument::BrightnessContrastGammaFilter:
 				updateInstrument_brightnessContrastGammaFilter();
 				break;

@@ -91,6 +91,14 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 			break;
 		}
 
+		case VirtualKey('L'):
+		{
+			auto &settings = canvasManager.setInstrument_line(currentColor, 5.0f);
+			currentColorChangeTarget = &settings.color;
+			someParameterChangeTarget = &settings.width;
+			break;
+		}
+
 		case VirtualKey('F'):
 		{
 			currentColorChangeTarget = nullptr;
@@ -159,6 +167,10 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 
 		case VirtualKey::Enter:
 			canvasManager.applyInstrument();
+			break;
+
+		case VirtualKey::Escape:
+			canvasManager.resetInstrument();
 			break;
 	}
 }

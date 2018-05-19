@@ -89,7 +89,7 @@ void CanvasManager::updateInstrument_brush()
 	if (prevPointerPosition == pointerPosition)
 		return;
 
-	device->setRenderTarget(layerTextures[0]);
+	device->setRenderTarget(layerTextures[currentLayer]);
 	device->setViewport(rectu32(0, 0, canvasSize));
 	device->setScissorRect(selection);
 	device->setTransform2D(Matrix2x3::Identity());
@@ -99,6 +99,44 @@ void CanvasManager::updateInstrument_brush()
 
 	geometryGenerator.drawLine(segmentBegin, segmentEnd, settings.width, settings.color, true, true);
 	geometryGenerator.flush();
+}
+
+void CanvasManager::updateInstrument_line()
+{
+	InstrumentState_Line &state = instrumentState.line;
+	LineSettings &settings = instrumentSettings.line;
+
+	if (pointerIsActive)
+	{
+		if (state.inProgress)
+		{
+			float32x2 currentPosition = float32x2(pointerPosition) * viewToCanvasTransform;
+			if (state.endPosition != currentPosition)
+			{
+				state.endPosition = currentPosition;
+
+				device->clear(tempTexture, 0xFFFFFF00_rgba);
+				device->setRenderTarget(tempTexture);
+				device->setViewport(rectu32(0, 0, canvasSize));
+				device->setScissorRect(selection);
+				device->setTransform2D(Matrix2x3::Identity());
+
+				geometryGenerator.drawLine(state.startPosition, state.endPosition, settings.width,
+					settings.color, settings.roundedEnd, settings.roundedEnd);
+				geometryGenerator.flush();
+			}
+		}
+		else
+		{
+			state.inProgress = true;
+			state.startPosition = float32x2(pointerPosition) * viewToCanvasTransform;
+			state.endPosition = state.startPosition;
+		}
+	}
+	else
+	{
+		state.inProgress = false;
+	}
 }
 
 void CanvasManager::updateInstrument_brightnessContrastGammaFilter()
@@ -189,6 +227,22 @@ BrushSettings& CanvasManager::setInstrument_brush(Color color, float32 width)
 	return instrumentSettings.brush;
 }
 
+LineSettings& CanvasManager::setInstrument_line(XLib::Color color, float32 width,
+	bool roundedStart, bool roundedEnd)
+{
+	disableCurrentLayerRendering = false;
+	enableTempLayerRendering = true;
+
+	instrumentSettings.line.color = color;
+	instrumentSettings.line.width = width;
+	instrumentSettings.line.roundedStart = roundedStart;
+	instrumentSettings.line.roundedEnd = roundedEnd;
+	instrumentState.line.inProgress = false;
+	currentInstrument = Instrument::Line;
+
+	return instrumentSettings.line;
+}
+
 BrightnessContrastGammaFilterSettings& CanvasManager::setInstrument_brightnessContrastGammaFilter(
 	float32 brightness, float32 contrast, float32 gamma)
 {
@@ -225,16 +279,4 @@ void CanvasManager::applyInstrument()
 			instrumentState.brightnessContrastGammaFilter.apply = true;
 			break;
 	}
-}
-
-PencilSettings& Panter::CanvasManager::getInstrumentSettings_pencil() {
-    return instrumentSettings.pencil;
-}
-
-BrushSettings& Panter::CanvasManager::getInstrumentSettings_brush() {
-    return instrumentSettings.brush;
-}
-
-BrightnessContrastGammaFilterSettings& Panter::CanvasManager::getInstrumentSettings_brightnessContrastGammaFilter() {
-    return instrumentSettings.brightnessContrastGamma;
 }
