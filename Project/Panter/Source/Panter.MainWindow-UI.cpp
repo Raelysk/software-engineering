@@ -222,31 +222,42 @@ void Panter::MainWindow::ProcessGui() {
 			}
 			else if (currentInstrument == Instrument::Brush) {
 				auto& settings = canvasManager.getInstrumentSettings_brush();
+				bool updateSettings = false;
 
-				ImGui::SliderFloat("Line Width", &settings.width, 1.0f, 40.0f);
+				XLib::Color color = toRGBA(mainColor);
 
-				settings.color = toRGBA(mainColor);
+				updateSettings |= ImGui::SliderFloat("Line Width", &settings.width, 1.0f, 40.0f);
+				updateSettings |= (settings.color != color);
+				settings.color = color;
 
-				canvasManager.updateInstrumentSettings();
+				if (updateSettings) canvasManager.updateInstrumentSettings();
 			}
 			else if (currentInstrument == Instrument::Pencil) {
 				auto& settings = canvasManager.getInstrumentSettings_pencil();
+				bool updateSettings = false;
 
-				settings.color = toRGB(mainColor);
+				XLib::Color color = toRGB(mainColor);
 
-				canvasManager.updateInstrumentSettings();
+				updateSettings |= (settings.color != color);
+				settings.color = color;
+
+				if (updateSettings) canvasManager.updateInstrumentSettings();
 			}
 			else if (currentInstrument == Instrument::Line) {
 				auto& settings = canvasManager.getInstrumentSettings_line();
+				bool updateSettings = false;
 
-				ImGui::SliderFloat("Line Width", &settings.width, 1.0f, 40.0f);
+				XLib::Color color = toRGBA(mainColor);
 
-				ImGui::Checkbox("Rounded Start", &settings.roundedStart);
-				ImGui::Checkbox("Rounded End", &settings.roundedEnd);
+				updateSettings |= ImGui::SliderFloat("Line Width", &settings.width, 1.0f, 40.0f);
 
-				settings.color = toRGBA(mainColor);
+				updateSettings |= ImGui::Checkbox("Rounded Start", &settings.roundedStart);
+				updateSettings |= ImGui::Checkbox("Rounded End", &settings.roundedEnd);
+				updateSettings |= (settings.color != color);
 
-				canvasManager.updateInstrumentSettings();
+				settings.color = color;
+
+				if (updateSettings) canvasManager.updateInstrumentSettings();
 
 				if (ImGui::Button("Apply", ImVec2(buttonSize, buttonSize * 0.5f))) {
 					canvasManager.applyInstrument();
@@ -254,12 +265,13 @@ void Panter::MainWindow::ProcessGui() {
 			}
 			else if (currentInstrument == Instrument::BrightnessContrastGammaFilter) {
 				auto& settings = canvasManager.getInstrumentSettings_brightnessContrastGammaFilter();
+				bool updateSettings = false;
 
-				ImGui::SliderFloat("Brightness", &settings.brightness, 0.0f, 1.0f);
-				ImGui::SliderFloat("Contrast", &settings.contrast, 0.0f, 10.0f);
-				ImGui::SliderFloat("Gamma", &settings.gamma, 0.0f, 10.0f);
+				updateSettings |= ImGui::SliderFloat("Brightness", &settings.brightness, 0.0f, 1.0f);
+				updateSettings |= ImGui::SliderFloat("Contrast", &settings.contrast, 0.0f, 10.0f);
+				updateSettings |= ImGui::SliderFloat("Gamma", &settings.gamma, 0.0f, 10.0f);
 
-				canvasManager.updateInstrumentSettings();
+				if (updateSettings) canvasManager.updateInstrumentSettings();
 
 				if (ImGui::Button("Apply", ImVec2(buttonSize, buttonSize * 0.5f))) {
 					canvasManager.applyInstrument();
