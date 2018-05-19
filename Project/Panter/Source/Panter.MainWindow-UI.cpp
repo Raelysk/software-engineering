@@ -27,6 +27,7 @@ std::map<Instrument, const char*> kInstrumentNames = {
 	{ Instrument::Selection, "Selection" },
 	{ Instrument::Pencil, "Pencil" },
 	{ Instrument::Brush, "Brush" },
+	{ Instrument::Line, "Line" },
 	{ Instrument::BrightnessContrastGammaFilter, "Brightness Contrast Gamma Filter" },
 	{ Instrument::GaussianFilter, "Gaussian Blur Filter" },
 };
@@ -104,7 +105,7 @@ void Panter::MainWindow::ProcessGui() {
 
 			if (ImGui::BeginMenu("Filters")) {
 				if (ImGui::MenuItem("Brightness contrast gamma") && currentInstrument != Instrument::BrightnessContrastGammaFilter) {
-					canvasManager.setInstrument_brightnessContrastGammaFilter(0.0f, 1.0f, 1.0f);
+					canvasManager.setInstrument_brightnessContrastGammaFilter();
 				}
 				if (ImGui::MenuItem("Gaussian Blur")) {
 
@@ -135,13 +136,13 @@ void Panter::MainWindow::ProcessGui() {
 			canvasManager.setInstrument_pencil(toRGB(mainColor));
 		}
 		if (ImGui::Button("Brush", ImVec2(buttonSize, buttonSize)) && currentInstrument != Instrument::Brush) {
-			canvasManager.setInstrument_brush(toRGBA(mainColor), 1.0f);
+			canvasManager.setInstrument_brush(toRGBA(mainColor));
 		}
 		if (ImGui::Button("Eraser", ImVec2(buttonSize, buttonSize))) {
 
 		}
 		if (ImGui::Button("Line", ImVec2(buttonSize, buttonSize))) {
-
+			canvasManager.setInstrument_line(toRGBA(mainColor));
 		}
 		if (ImGui::Button("Rectangle", ImVec2(buttonSize, buttonSize))) {
 
@@ -208,10 +209,16 @@ void Panter::MainWindow::ProcessGui() {
 		if (currentInstrument != Instrument::None) {
 			ImGui::Separator();
 
-			ImGui::Text(kInstrumentNames[currentInstrument]);
+			if (kInstrumentNames.count(currentInstrument) != 0) {
+				ImGui::Text(kInstrumentNames[currentInstrument]);
+			} else {
+				ImGui::Text("Unknown");
+			}
 
 			if (currentInstrument == Instrument::Selection) {
-				ImGui::Button("Crop", ImVec2(buttonSize, buttonSize));
+				if (ImGui::Button("Crop", ImVec2(buttonSize, buttonSize))) {
+					canvasManager.resizeSavingContents(canvasManager.getSelection());
+				}
 			}
 			else if (currentInstrument == Instrument::Brush) {
 				auto& settings = canvasManager.getInstrumentSettings_brush();
@@ -228,6 +235,22 @@ void Panter::MainWindow::ProcessGui() {
 				settings.color = toRGB(mainColor);
 
 				canvasManager.updateInstrumentSettings();
+			}
+			else if (currentInstrument == Instrument::Line) {
+				auto& settings = canvasManager.getInstrumentSettings_line();
+
+				ImGui::SliderFloat("Line Width", &settings.width, 1.0f, 40.0f);
+
+				ImGui::Checkbox("Rounded Start", &settings.roundedStart);
+				ImGui::Checkbox("Rounded End", &settings.roundedEnd);
+
+				settings.color = toRGBA(mainColor);
+
+				canvasManager.updateInstrumentSettings();
+
+				if (ImGui::Button("Apply", ImVec2(buttonSize, buttonSize * 0.5f))) {
+					canvasManager.applyInstrument();
+				}
 			}
 			else if (currentInstrument == Instrument::BrightnessContrastGammaFilter) {
 				auto& settings = canvasManager.getInstrumentSettings_brightnessContrastGammaFilter();
