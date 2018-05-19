@@ -112,3 +112,6 @@ _pkginfo.txt
 # rbmkp4800
 [Bb]uild/
 [Ii]ntermediate/
+
+#imgui props
+imgui.ini
