@@ -233,7 +233,7 @@ void Panter::MainWindow::openFile() {
 
         rectu32 dstRegion(0, 0, dstWidth, dstHeight);
 
-        canvasManager.uploadLayerRegion(0, dstRegion, imageData, width * 4);
+        canvasManager.uploadLayerRegion(canvasManager.getCurrentLayerId(), dstRegion, imageData, width * 4);
     }
 }
 
@@ -478,11 +478,14 @@ void Panter::MainWindow::ProcessGui() {
             numberOfLayers = canvasManager.getLayerCount();
             currentLayerId = canvasManager.getCurrentLayerId();
         }
+        if (ImGui::Button("Clear layer")) {
+            canvasManager.clearLayer(currentLayerId, toRGBA(secondaryColor));
+        }
         ImGui::Separator();
         
         ImGui::BeginGroup();
 
-        for (int i = 0; i < numberOfLayers; ++i) {
+        for (int i = numberOfLayers - 1; i >= 0; --i) {
             ImGui::PushID(i);
             if (ImGui::Selectable("", (i == currentLayerId))) {
                 currentLayerId = i;
