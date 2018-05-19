@@ -29,7 +29,7 @@ void GeometryGenerator::flush()
 	if (!vertexBufferBytesUsed)
 		return;
 
-	device->updateBuffer(gpuVertexBuffer, cpuVertexBuffer, 0, vertexBufferBytesUsed);
+	device->uploadBuffer(gpuVertexBuffer, cpuVertexBuffer, 0, vertexBufferBytesUsed);
 	device->draw2D(PrimitiveType::TriangleList, Effect::PerVertexColor, gpuVertexBuffer,
 		0, sizeof(VertexColor2D), vertexBufferBytesUsed / sizeof(VertexColor2D));
 

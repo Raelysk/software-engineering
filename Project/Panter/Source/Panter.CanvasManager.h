@@ -8,16 +8,19 @@
 #include <XLib.Graphics.h>
 #include <XLib.Graphics.GeometryGenerator.h>
 
+// TODO: Handle current layer change during filter preview.
+
 namespace Panter
 {
-	enum class CanvasInstrument : uint8
+	struct PencilSettings
 	{
-		None = 0,
+		XLib::Color color;
+	};
 
-		Select,
-		SelectionResize,
-		Pencil,
-		Brush,
+	struct BrushSettings
+	{
+		XLib::Color color;
+		float32 width;
 	};
 
 	struct BrightnessContrastGammaFilterSettings
@@ -27,6 +30,22 @@ namespace Panter
 		float32 gamma;
 	};
 
+	struct GaussianBlurFilterSettings
+	{
+
+	};
+
+    enum class Instrument : uint8 {
+        None = 0,
+
+        Selection,
+        Pencil,
+        Brush,
+
+        BrightnessContrastGammaFilter,
+        GaussianFilter,
+    };
+
 	class CanvasManager : public XLib::NonCopyable
 	{
 	private: // meta
@@ -35,7 +54,24 @@ namespace Panter
 
 		//using Layers = XLib::Vector<XLib::Graphics::TextureRenderTarget>;
 
+		struct InstrumentState_Selection
+		{
+			bool inProgress;
+			uint32x2 firstCornerPosition;
+		};
+
+		struct InstrumentState_Pencil { };
+
+		struct InstrumentState_Brush { };
+
+		struct InstrumentState_BrightnessContrastGammaFilter
+		{
+			bool outOfDate;
+			bool apply;
+		};
+
 	private: // data
+		// graphics resources
 		XLib::Graphics::Device *device = nullptr;
 		XLib::Graphics::Buffer quadVertexBuffer;
 		XLib::Graphics::GeometryGenerator geometryGenerator;
@@ -43,13 +79,35 @@ namespace Panter
 		XLib::Graphics::CustomEffect brightnessContrastGammaEffect;
 		XLib::Graphics::CustomEffect checkerboardEffect;
 
+		// canvas data
 		XLib::Graphics::TextureRenderTarget layerTextures[16];
 		XLib::Graphics::TextureRenderTarget tempTexture;
 		uint32x2 canvasSize = { 0, 0 };
 		uint16 layerCount = 0;
 
+		// canvas modification state
 		rectu32 selection = {};
+		uint16 currentLayer = 0;
+		Instrument currentInstrument = Instrument::None;
+		bool disableCurrentLayerRendering = false;
+		bool enableTempLayerRendering = false;
 
+		union
+		{
+			PencilSettings pencil;
+			BrushSettings brush;
+			BrightnessContrastGammaFilterSettings brightnessContrastGamma;
+		} instrumentSettings;
+
+		union
+		{
+			InstrumentState_Selection selection;
+			InstrumentState_Pencil pencil;
+			InstrumentState_Brush brush;
+			InstrumentState_BrightnessContrastGammaFilter brightnessContrastGammaFilter;
+		} instrumentState;
+
+		// view state
 		float32x2 canvasPosition = { 0.0f, 0.0f };
 		float32 canvasScale = 0.0f;
 		bool viewCentered = false;
@@ -60,24 +118,17 @@ namespace Panter
 		XLib::Matrix2x3 viewToCanvasTransform = {};
 		XLib::Matrix2x3 canvasToViewTransform = {};
 
-		//union
-		//{
-		bool selectionInProgress = false;
-		uint32x2 selectionFirstCornerPosition = { 0, 0 };
-		bool filterPreview = false;
-		//} instrumentsData;
-
+		// pointer state
 		sint16x2 pointerPosition = { 0, 0 };
 		sint16x2 prevPointerPosition = { 0, 0 };
 		bool pointerIsActive = false;
 		bool pointerPanViewModeEnabled = false;
 
-		CanvasInstrument currentInstrument = CanvasInstrument::None;
-		XLib::Color currentColor;
-
 	private: // code
-		inline void updateCanvasTransforms();
-		inline float32x2 convertViewToCanvasSpace(sint16x2 position);
+		void updateInstrument_selection();
+		void updateInstrument_pencil();
+		void updateInstrument_brush();
+		void updateInstrument_brightnessContrastGammaFilter();
 
 	public:
 		CanvasManager() = default;
@@ -90,13 +141,23 @@ namespace Panter
 		void updateAndDraw(XLib::Graphics::RenderTarget& target, const rectu32& viewport /* TODO: move from here */);
 		//void setViewport();
 
-		void brightnessContrastGammaFilter(bool preview, const BrightnessContrastGammaFilterSettings& settings);
-
 		void resetSelection();
-		void setInstrument(CanvasInstrument instrument);
-		void setColor(XLib::Color color);
 		void setPointerState(sint16x2 position, bool isActive);
-		//void setCurrentLayer(uint16 layerIndex);
+		void setCurrentLayer(uint16 layerIndex);
+
+		void			setInstrument_selection();
+		PencilSettings&	setInstrument_pencil(XLib::Color color);
+		BrushSettings&	setInstrument_brush(XLib::Color color, float32 width);
+		BrightnessContrastGammaFilterSettings&	setInstrument_brightnessContrastGammaFilter(float32 brightness, float32 contrast, float32 gamma);
+		GaussianBlurFilterSettings&				setInstrument_gaussianBlurFilter();
+		void updateInstrumentSettings();
+		void applyInstrument();
+
+        PencilSettings&	getInstrumentSettings_pencil();
+        BrushSettings&	getInstrumentSettings_brush();
+        BrightnessContrastGammaFilterSettings&	getInstrumentSettings_brightnessContrastGammaFilter();
+        GaussianBlurFilterSettings&				getInstrumentSettings_gaussianBlurFilter();
+
 
 		uint16 createLayer(uint16 insertAtIndex = uint16(-1));
 		void removeLayer(uint16 index);
@@ -116,13 +177,13 @@ namespace Panter
 		//void undo();
 		//void redo();
 
-        inline XLib::Color getColor() const { return currentColor; }
-        inline CanvasInstrument getCanvasInstrument() const { return currentInstrument; }
+        inline Instrument getCanvasInstrument() const { return currentInstrument; }
 
 		inline uint32x2 getCanvasSize() const { return canvasSize; }
 		inline uint32 getCanvasWidth() const { return canvasSize.x; }
 		inline uint32 getCanvasHeight() const { return canvasSize.y; }
 		inline float32 getCanvasScale() const { return canvasScale; }
+		inline uint16 getLayerCount() const { return layerCount; }
 		inline bool isInitialized() const { return device != nullptr; }
 	};
 }

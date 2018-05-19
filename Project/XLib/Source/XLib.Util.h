@@ -3,7 +3,7 @@
 #include "XLib.Types.h"
 
 #ifndef __PLACEMENT_NEW_INLINE
-
+  
 inline void* operator new (size_t, void* block) { return block; }
 inline void operator delete (void* block, void*) {}
 

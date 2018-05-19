@@ -143,13 +143,13 @@ void Device::setCustomEffectConstants(const void* data, uint32 size)
 		0, nullptr, customEffectConstantsBuffer, 0, 0);
 }
 
-void Device::updateBuffer(Buffer& buffer, const void* srcData, uint32 baseOffset, uint32 size)
+void Device::uploadBuffer(Buffer& buffer, const void* srcData, uint32 baseOffset, uint32 size)
 {
     d3dContext->UpdateSubresource(buffer.d3dBuffer, 0,
         &D3D11Box(baseOffset, baseOffset + size), srcData, 0, 0);
 }
 
-void Device::updateTexture(Texture& texture, const rectu32& region,
+void Device::uploadTexture(Texture& texture, const rectu32& region,
     const void* srcData, uint32 srcDataStride)
 {
 	if (!srcDataStride)
@@ -157,6 +157,12 @@ void Device::updateTexture(Texture& texture, const rectu32& region,
 
     d3dContext->UpdateSubresource(texture.d3dTexture, 0,
         &D3D11Box(region.left, region.right, region.top, region.bottom), srcData, srcDataStride, 0);
+}
+
+void Device::copyTexture(Texture& dstTexture, Texture& srcTexture, uint32x2 dstLocation, const rectu32& srcRegion)
+{
+	d3dContext->CopySubresourceRegion(dstTexture.d3dTexture, 0, dstLocation.x, dstLocation.y, 0,
+		srcTexture.d3dTexture, 0, &D3D11Box(srcRegion.left, srcRegion.right, srcRegion.top, srcRegion.bottom));
 }
 
 void Device::draw2D(PrimitiveType primitiveType, Effect effect, Buffer& vertexBuffer,

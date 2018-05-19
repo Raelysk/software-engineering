@@ -17,8 +17,15 @@ namespace Panter
 		XLib::Graphics::WindowRenderTarget windowRenderTarget;
 		uint16 width = 0, height = 0;
 
+		XLib::Color currentColor = 0;
+		XLib::Color *currentColorChangeTarget = nullptr;
+		float32 *someParameterChangeTarget = nullptr;
+
 		CanvasManager canvasManager;
         
+        ImVec4 mainColor = {0.0f, 0.0f, 0.0f, 1.0f};
+        ImVec4 secondaryColor = {0.0f, 0.0f, 0.0f, 0.0f};
+
 	private: // code
         virtual void onCreate(XLib::CreationArgs& args) override;
         virtual void onKeyboard(XLib::VirtualKey key, bool state) override;
