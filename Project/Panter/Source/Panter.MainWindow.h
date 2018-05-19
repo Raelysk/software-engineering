@@ -26,6 +26,8 @@ namespace Panter
         ImVec4 mainColor = {0.0f, 0.0f, 0.0f, 1.0f};
         ImVec4 secondaryColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
+        ImVec4 colorPalette[32];
+
         bool isMainColorPickerChoosen = true;
 
 	private: // code
@@ -35,6 +37,9 @@ namespace Panter
 		virtual void onMouseMove(XLib::MouseState& mouseState) override;
 		virtual void onMouseWheel(XLib::MouseState& mouseState, float32 delta) override;
 		virtual void onResize(XLib::ResizingArgs& args) override;
+        virtual void onCharacter(wchar character) override;
+
+        void openFile();
 
         void InitGui();
         void ProcessGui();
