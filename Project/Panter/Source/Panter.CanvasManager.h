@@ -145,7 +145,8 @@ namespace Panter
 		void setPointerState(sint16x2 position, bool isActive);
 		void setCurrentLayer(uint16 layerIndex);
 
-		void			setInstrument_selection();
+		void resetInstrument();
+		void setInstrument_selection();
 		PencilSettings&	setInstrument_pencil(XLib::Color color);
 		BrushSettings&	setInstrument_brush(XLib::Color color, float32 width);
 		BrightnessContrastGammaFilterSettings&	setInstrument_brightnessContrastGammaFilter(float32 brightness, float32 contrast, float32 gamma);
