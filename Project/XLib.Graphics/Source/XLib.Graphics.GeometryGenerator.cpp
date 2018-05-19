@@ -36,7 +36,8 @@ void GeometryGenerator::flush()
 	vertexBufferBytesUsed = 0;
 }
 
-void GeometryGenerator::drawLine(float32x2 start, float32x2 end, float32 width, Color color)
+void GeometryGenerator::drawLine(float32x2 start, float32x2 end, float32 width,
+	Color color, bool roundedStart, bool roundedEnd)
 {
 	VertexColor2D *vertices = allocateVertices<VertexColor2D>(6);
 
@@ -47,6 +48,12 @@ void GeometryGenerator::drawLine(float32x2 start, float32x2 end, float32 width, 
 	vertices[3] = vertices[0];
 	vertices[4] = vertices[2];
 	vertices[5] = { end - w, color };
+
+	if (roundedStart)
+		drawLeftHalfEllipseOnDiameter(start - w, start + w, color);
+
+	if (roundedEnd)
+		drawLeftHalfEllipseOnDiameter(end + w, end - w, color);
 }
 
 void GeometryGenerator::drawRect(const rectf32& rect, Color color)
@@ -123,6 +130,34 @@ void GeometryGenerator::drawVerticalGradientRect(const rectf32& rect, Color topC
 	vertices[3] = { { rect.left,   rect.top    }, topColor };
 	vertices[4] = { { rect.right,  rect.bottom }, bottomColor };
 	vertices[5] = { { rect.left,   rect.bottom }, bottomColor };
+}
+
+void GeometryGenerator::drawLeftHalfEllipseOnDiameter(float32x2 diameterStart, float32x2 diameterEnd,
+	Color color, uint32 segmentCount)
+{
+	VertexColor2D *vertices = allocateVertices<VertexColor2D>(segmentCount * 3);
+
+	float32 angleStep = Math::PiF32 / float32(segmentCount);
+	float32 angle = angleStep;
+	float32x2 prevVertex = diameterEnd;
+
+	float32x2 diameter = (diameterEnd - diameterStart) / 2.0f;
+	float32x2 side = VectorMath::NormalLeft(diameter);
+
+	for (uint32 i = 0; i < segmentCount; i++)
+	{
+		float32 sin = Math::Sin(angle);
+		float32 cos = Math::Cos(angle);
+
+		float32x2 newVertex = diameterStart + diameter * (1.0f + cos) + side * sin;
+
+		vertices[i * 3 + 0] = { diameterStart, color };
+		vertices[i * 3 + 1] = { prevVertex, color };
+		vertices[i * 3 + 2] = { newVertex, color };
+
+		prevVertex = newVertex;
+		angle += angleStep;
+	}
 }
 
 inline void* GeometryGenerator::allocateVertices(uint32 size)

@@ -97,7 +97,7 @@ void CanvasManager::updateInstrument_brush()
 	float32x2 segmentBegin = float32x2(prevPointerPosition) * viewToCanvasTransform;
 	float32x2 segmentEnd = float32x2(pointerPosition) * viewToCanvasTransform;
 
-	geometryGenerator.drawLine(segmentBegin, segmentEnd, settings.width, settings.color);
+	geometryGenerator.drawLine(segmentBegin, segmentEnd, settings.width, settings.color, true, true);
 	geometryGenerator.flush();
 }
 
