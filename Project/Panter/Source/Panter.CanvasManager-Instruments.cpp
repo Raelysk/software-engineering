@@ -216,3 +216,15 @@ void CanvasManager::applyInstrument()
 			break;
 	}
 }
+
+PencilSettings& Panter::CanvasManager::getInstrumentSettings_pencil() {
+    return instrumentSettings.pencil;
+}
+
+BrushSettings& Panter::CanvasManager::getInstrumentSettings_brush() {
+    return instrumentSettings.brush;
+}
+
+BrightnessContrastGammaFilterSettings& Panter::CanvasManager::getInstrumentSettings_brightnessContrastGammaFilter() {
+    return instrumentSettings.brightnessContrastGamma;
+}

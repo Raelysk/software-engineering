@@ -6,6 +6,8 @@
 
 #include "Panter.CanvasManager.h"
 
+#include "imgui\imgui.h"
+
 namespace Panter
 {
 	class MainWindow : public XLib::WindowBase
@@ -20,14 +22,20 @@ namespace Panter
 		float32 *someParameterChangeTarget = nullptr;
 
 		CanvasManager canvasManager;
+        
+        ImVec4 mainColor = {0.0f, 0.0f, 0.0f, 1.0f};
+        ImVec4 secondaryColor = {0.0f, 0.0f, 0.0f, 0.0f};
 
 	private: // code
-		virtual void onCreate(XLib::CreationArgs& args) override;
-		virtual void onKeyboard(XLib::VirtualKey key, bool state) override;
+        virtual void onCreate(XLib::CreationArgs& args) override;
+        virtual void onKeyboard(XLib::VirtualKey key, bool state) override;
 		virtual void onMouseButton(XLib::MouseState& mouseState, XLib::MouseButton button, bool state) override;
 		virtual void onMouseMove(XLib::MouseState& mouseState) override;
 		virtual void onMouseWheel(XLib::MouseState& mouseState, float32 delta) override;
 		virtual void onResize(XLib::ResizingArgs& args) override;
+
+        void InitGui();
+        void ProcessGui();
 
 	public:
 		MainWindow(XLib::Graphics::Device& device);

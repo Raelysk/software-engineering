@@ -35,6 +35,17 @@ namespace Panter
 
 	};
 
+    enum class Instrument : uint8 {
+        None = 0,
+
+        Selection,
+        Pencil,
+        Brush,
+
+        BrightnessContrastGammaFilter,
+        GaussianFilter,
+    };
+
 	class CanvasManager : public XLib::NonCopyable
 	{
 	private: // meta
@@ -42,18 +53,6 @@ namespace Panter
 		static constexpr float32 viewIntertiaFactor = 0.15f;
 
 		//using Layers = XLib::Vector<XLib::Graphics::TextureRenderTarget>;
-
-		enum class Instrument : uint8
-		{
-			None = 0,
-
-			Selection,
-			Pencil,
-			Brush,
-
-			BrightnessContrastGammaFilter,
-			GaussianFilter,
-		};
 
 		struct InstrumentState_Selection
 		{
@@ -154,6 +153,12 @@ namespace Panter
 		void updateInstrumentSettings();
 		void applyInstrument();
 
+        PencilSettings&	getInstrumentSettings_pencil();
+        BrushSettings&	getInstrumentSettings_brush();
+        BrightnessContrastGammaFilterSettings&	getInstrumentSettings_brightnessContrastGammaFilter();
+        GaussianBlurFilterSettings&				getInstrumentSettings_gaussianBlurFilter();
+
+
 		uint16 createLayer(uint16 insertAtIndex = uint16(-1));
 		void removeLayer(uint16 index);
 		//void moveLayer(uint16 fromIndex, uint16 toIndex);
@@ -171,6 +176,8 @@ namespace Panter
 
 		//void undo();
 		//void redo();
+
+        inline Instrument getCanvasInstrument() const { return currentInstrument; }
 
 		inline uint32x2 getCanvasSize() const { return canvasSize; }
 		inline uint32 getCanvasWidth() const { return canvasSize.x; }

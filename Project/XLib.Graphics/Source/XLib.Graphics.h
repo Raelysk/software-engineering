@@ -209,6 +209,13 @@ namespace XLib::Graphics
 	public:
 		bool initialize();
 
+        ID3D11Device* getD11Device() {
+            return d3dDevice.get();
+        }
+        ID3D11DeviceContext* getD11DeviceContext() {
+            return d3dContext.get();
+        }
+
 		void clear(RenderTarget& renderTarget, Color color);
 		void setRenderTarget(RenderTarget& renderTarget);
 		void setViewport(const rectu32& viewport);
