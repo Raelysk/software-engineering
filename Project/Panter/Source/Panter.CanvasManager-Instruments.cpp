@@ -181,7 +181,7 @@ void CanvasManager::updateInstrument_brightnessContrastGammaFilter()
 		disableCurrentLayerRendering = false;
 		enableTempLayerRendering = false;
 
-		device->copyTexture(layerTextures[currentLayer], tempTexture, { 0, 0 }, { 0, 0, canvasSize });
+		device->copyTexture(layerTextures[currentLayer], tempTexture, selection.leftTop, selection);
 
 		resetInstrument();
 	}
