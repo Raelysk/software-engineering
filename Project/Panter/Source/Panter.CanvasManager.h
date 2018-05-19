@@ -210,7 +210,8 @@ namespace Panter
         inline uint16 getCurrentLayerId() const { return currentLayer; }
 		inline const rectu32& getSelection() const { return selection; }
 
-		inline float32 getCanvasScale() const { return canvasScale; }
+		inline float32 getCanvasScale() const { return inertCanvasScale; }
+		inline float32x2 getCanvasSpacePointerPosition() const { return float32x2(pointerPosition) * viewToCanvasTransform; }
 		
 		inline bool isInitialized() const { return device != nullptr; }
 	};

@@ -121,6 +121,16 @@ void Panter::MainWindow::ProcessGui() {
 				ImGui::EndMenu();
 			}
 
+			{
+				float32x2 pointerPosition = canvasManager.getCanvasSpacePointerPosition();
+				ImGui::SetCursorPosX(width - 200.0f);
+				ImGui::Text("%d,%d", int(pointerPosition.x), int(pointerPosition.y));
+				ImGui::SetCursorPosX(width - 130.0f);
+				ImGui::Text("%3d%%", int(canvasManager.getCanvasScale() * 100.0f));
+				ImGui::SetCursorPosX(width - 80.0f);
+				ImGui::Text("%dx%d", canvasManager.getCanvasWidth(), canvasManager.getCanvasHeight());
+			}
+
 			ImGui::EndMainMenuBar();
 		}
 	}
