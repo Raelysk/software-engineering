@@ -24,6 +24,8 @@ namespace Panter
 
 		CanvasManager canvasManager;
         
+		std::wstring currentFileName = L"";
+
         ImVec4 mainColor = {0.0f, 0.0f, 0.0f, 1.0f};
         ImVec4 secondaryColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -33,6 +35,16 @@ namespace Panter
 
         std::string layerNames[16] = {"Layer 0"};
         uint16 lastLayerNumber = 0;
+
+		bool openResizeWindow = false;
+		int resizeWidth = 0;
+		int resizeHeight = 0;
+		int resizeXOffset = 0;
+		int resizeYOffset = 0;
+
+		bool openCreateWindow = false;
+		int createWidth = 0;
+		int createHeight = 0;
 
 	private: // code
         virtual void onCreate(XLib::CreationArgs& args) override;
@@ -44,6 +56,8 @@ namespace Panter
         virtual void onCharacter(wchar character) override;
 
         void openFile();
+		void saveFileWithDialog();
+		void saveCurrentFile();
 
         void InitGui();
         void ProcessGui();

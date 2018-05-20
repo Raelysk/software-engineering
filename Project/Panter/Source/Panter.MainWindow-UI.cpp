@@ -79,12 +79,25 @@ void Panter::MainWindow::ProcessGui() {
 	{
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
-				if (ImGui::MenuItem("New", "Ctrl+N")) {}
+				if (ImGui::MenuItem("New", "Ctrl+N")) {
+					openCreateWindow = true;
+					createWidth = canvasManager.getCanvasWidth();
+					createHeight = canvasManager.getCanvasHeight();
+				}
 				if (ImGui::MenuItem("Open", "Ctrl+O")) {
 					openFile();
 				}
-				if (ImGui::MenuItem("Save", "Ctrl+S")) {}
-				if (ImGui::MenuItem("Save As..")) {}
+				if (ImGui::MenuItem("Save", "Ctrl+S")) {
+					if (currentFileName.empty()) {
+						saveFileWithDialog();
+					}
+					else {
+						saveCurrentFile();
+					}
+				}
+				if (ImGui::MenuItem("Save As..")) {
+					saveFileWithDialog();
+				}
 				ImGui::Separator();
 				if (ImGui::BeginMenu("Options")) {
 
@@ -99,6 +112,13 @@ void Panter::MainWindow::ProcessGui() {
 				}
 				if (ImGui::MenuItem("Reset selection")) {
 					canvasManager.resetSelection();
+				}
+				if (ImGui::MenuItem("Resize")) {
+					openResizeWindow = true;
+					resizeWidth = canvasManager.getCanvasWidth();
+					resizeHeight = canvasManager.getCanvasHeight();
+					resizeXOffset = 0;
+					resizeYOffset = 0;
 				}
 				ImGui::EndMenu();
 			}
@@ -366,7 +386,78 @@ void Panter::MainWindow::ProcessGui() {
 		}
 
 		ImGui::End();
+	}
 
+	if (openResizeWindow) {
+		ImGui::SetNextWindowPos(ImVec2(width * 0.4f, height * 0.4f), ImGuiCond_Always);
+		ImGui::SetNextWindowSize(ImVec2(width * 0.2f, -1), ImGuiCond_Always);
+		ImGui::Begin("Resize", &openResizeWindow, windowFlags & ~ImGuiWindowFlags_NoTitleBar);
+
+		ImGui::Text("New canvas size:");
+		if (ImGui::InputInt("Width", &resizeWidth)) {
+			if (resizeWidth < 1) {
+				resizeWidth = 1;
+			}
+		}
+		if (ImGui::InputInt("Height", &resizeHeight)) {
+			if (resizeHeight < 1) {
+				resizeHeight = 1;
+			}
+		}
+
+		ImGui::Text("Source offset:");
+		if (ImGui::InputInt("X offset", &resizeXOffset)) {
+		}
+		if (ImGui::InputInt("Y offset", &resizeYOffset)) {
+		}
+
+		if (ImGui::Button("Apply", ImVec2(buttonSize, buttonSize * 0.5f))) {
+			canvasManager.resizeSavingContents({resizeXOffset, resizeYOffset, resizeWidth, resizeHeight }, toRGBA(secondaryColor));
+			setTitle(L"Panter");
+			openResizeWindow = false;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel", ImVec2(buttonSize, buttonSize * 0.5f))) {
+			openResizeWindow = false;
+		}
+
+		ImGui::End();
+	}
+
+	if (openCreateWindow) {
+		ImGui::SetNextWindowPos(ImVec2(width * 0.4f, height * 0.4f), ImGuiCond_Always);
+		ImGui::SetNextWindowSize(ImVec2(width * 0.2f, -1), ImGuiCond_Always);
+		ImGui::Begin("New canvas", &openCreateWindow, windowFlags & ~ImGuiWindowFlags_NoTitleBar);
+
+		ImGui::Text("Canvas size:");
+		if (ImGui::InputInt("Width", &createWidth)) {
+			if (createWidth < 1) {
+				createWidth = 1;
+			}
+		}
+		if (ImGui::InputInt("Height", &createHeight)) {
+			if (createHeight < 1) {
+				createHeight = 1;
+			}
+		}
+
+		if (ImGui::Button("Create", ImVec2(buttonSize, buttonSize * 0.5f))) {
+			for (int i = canvasManager.getLayerCount(); i > 0; --i) {
+				canvasManager.removeLayer((uint16)i);
+				layerNames[i] = "";
+			}
+			layerNames[0] = "Layer 0";
+			lastLayerNumber = 0;
+
+			canvasManager.resizeDiscardingContents({(uint32)createWidth, (uint32)createHeight });
+			openCreateWindow = false;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel", ImVec2(buttonSize, buttonSize * 0.5f))) {
+			openCreateWindow = false;
+		}
+
+		ImGui::End();
 	}
 
 	ImGui::Render();

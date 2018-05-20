@@ -73,6 +73,7 @@ namespace XLib
 		void setFocus();
 		void destroy();
 		bool isOpened();
+		void setTitle(const wchar* title);
 
 		static void DispatchPending();
 		static void DispatchAll();

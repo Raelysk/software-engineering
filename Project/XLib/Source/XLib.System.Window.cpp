@@ -154,6 +154,7 @@ void WindowBase::show(bool state) { ShowWindow(HWND(handle), state ? SW_SHOW : S
 void WindowBase::setFocus() { SetFocus(HWND(handle)); }
 void WindowBase::destroy() { DestroyWindow(HWND(handle)); }
 bool WindowBase::isOpened() { return IsWindow(HWND(handle)) ? true : false; }
+void WindowBase::setTitle(const wchar* title) { SetWindowTextW(HWND(handle), title); }
 
 void WindowBase::DispatchPending()
 {

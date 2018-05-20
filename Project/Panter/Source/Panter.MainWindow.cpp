@@ -216,6 +216,23 @@ void Panter::MainWindow::openFile() {
     }
 }
 
+void Panter::MainWindow::saveFileWithDialog()
+{
+	wchar filename[260];
+	if (SaveFileDialog(getHandle(), filename, countof(filename))) {
+		currentFileName.assign(filename);
+		saveCurrentFile();
+
+		std::wstring title = L"Panter - " + currentFileName;
+		setTitle(title.c_str());
+	}
+}
+
+void Panter::MainWindow::saveCurrentFile()
+{
+	//Save to currentFileName
+}
+
 void MainWindow::updateAndRedraw()
 {
 	canvasManager.updateAndDraw(windowRenderTarget, { 0, 0, width, height });
