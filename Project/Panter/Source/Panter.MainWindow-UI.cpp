@@ -329,6 +329,7 @@ void Panter::MainWindow::ProcessGui() {
 			canvasManager.setCurrentLayer(currentLayerId);
 
 			layerNames[currentLayerId] = "Layer " + std::to_string(++lastLayerNumber);
+			enableLayer[currentLayerId] = true;
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Remove", ImVec2(buttonSize * 1.5f, buttonSize * 0.5f))) {
@@ -336,6 +337,7 @@ void Panter::MainWindow::ProcessGui() {
 
 			for (int i = currentLayerId; i < numberOfLayers - 1; ++i) {
 				layerNames[i] = std::move(layerNames[i + 1]);
+				enableLayer[i] = enableLayer[i + 1];
 			}
 
 			numberOfLayers = canvasManager.getLayerCount();
@@ -350,6 +352,12 @@ void Panter::MainWindow::ProcessGui() {
 
 		for (int i = numberOfLayers - 1; i >= 0; --i) {
 			ImGui::PushID(i);
+
+			if (ImGui::Checkbox("##checkbox", &enableLayer[i])) {
+				//Pass new layer state to canvas manager
+			}
+			ImGui::SameLine();
+
 			if (ImGui::Selectable("", (i == currentLayerId))) {
 				currentLayerId = i;
 				canvasManager.setCurrentLayer(currentLayerId);
@@ -368,6 +376,7 @@ void Panter::MainWindow::ProcessGui() {
 				/*
 				canvasManager.moveLayer(currentLayerId, currentLayerId + 1);
 				std::swap(layerNames[currentLayerId], layerNames[currentLayerId + 1]);
+				std::swap(enableLayer[currentLayerId], enableLayer[currentLayerId + 1]);
 				++currentLayerId;
 				canvasManager.setCurrentLayer(currentLayerId);
 				*/
@@ -379,6 +388,7 @@ void Panter::MainWindow::ProcessGui() {
 				/*
 				canvasManager.moveLayer(currentLayerId, currentLayerId - 1);
 				std::swap(layerNames[currentLayerId], layerNames[currentLayerId - 1]);
+				std::swap(enableLayer[currentLayerId], enableLayer[currentLayerId - 1]);
 				--currentLayerId;
 				canvasManager.setCurrentLayer(currentLayerId);
 				*/

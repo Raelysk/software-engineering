@@ -34,6 +34,7 @@ namespace Panter
         bool isMainColorPickerChoosen = true;
 
         std::string layerNames[16] = {"Layer 0"};
+		bool enableLayer[16] = { true };
         uint16 lastLayerNumber = 0;
 
 		bool openResizeWindow = false;
