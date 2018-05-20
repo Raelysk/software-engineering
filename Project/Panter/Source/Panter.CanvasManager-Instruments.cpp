@@ -339,8 +339,6 @@ void CanvasManager::updateInstrumentSettings()
 
 		case Instrument::BrightnessContrastGammaFilter:
 			instrumentState.brightnessContrastGammaFilter.outOfDate = true;
-			disableCurrentLayerRendering = true;
-			enableTempLayerRendering = true;
 			break;
 	}
 }
