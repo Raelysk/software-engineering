@@ -79,6 +79,8 @@ namespace Panter
 			float32x2 endPosition;
 			bool inProgress;
 			bool outOfDate;
+			bool notEmpty;
+			bool apply;
 		};
 
 		struct InstrumentState_BrightnessContrastGammaFilter

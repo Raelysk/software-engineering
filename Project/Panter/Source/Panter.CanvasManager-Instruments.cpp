@@ -106,47 +106,109 @@ void CanvasManager::updateInstrument_line()
 	InstrumentState_Line &state = instrumentState.line;
 	LineSettings &settings = instrumentSettings.line;
 
+	auto render = [&]()
+	{
+		device->clear(tempTexture, 0xFFFFFF00_rgba);
+		device->setRenderTarget(tempTexture);
+		device->setViewport(rectu32(0, 0, canvasSize));
+		device->setScissorRect(selection);
+		device->setTransform2D(Matrix2x3::Identity());
+
+		geometryGenerator.drawLine(state.startPosition, state.endPosition, settings.width,
+			settings.color, settings.roundedStart, settings.roundedEnd);
+		geometryGenerator.flush();
+	};
+
+	auto apply = [&]()
+	{
+		{
+			float32x2 canvasSizeF(canvasSize);
+
+			VertexTexturedUnorm2D vertices[6];
+			vertices[0] = { { 0.0f,          0.0f          }, { 0,      0      } };
+			vertices[1] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
+			vertices[2] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
+			vertices[3] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
+			vertices[4] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
+			vertices[5] = { { canvasSizeF.x, canvasSizeF.y }, { 0xFFFF, 0xFFFF } };
+
+			device->uploadBuffer(quadVertexBuffer, vertices, 0, sizeof(vertices));
+		}
+
+		device->setRenderTarget(layerTextures[currentLayer]);
+		device->setViewport(rectu32(0, 0, canvasSize));
+		device->setScissorRect(selection);
+		device->setTransform2D(Matrix2x3::Identity());
+		device->setTexture(tempTexture);
+
+		device->draw2D(PrimitiveType::TriangleList, Effect::TexturedUnorm,
+			quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
+	};
+
 	if (pointerIsActive)
 	{
 		if (state.inProgress)
 		{
 			float32x2 currentPosition = float32x2(pointerPosition) * viewToCanvasTransform;
-			if (state.endPosition != currentPosition)
+			if (state.endPosition != currentPosition || state.outOfDate)
 			{
 				state.endPosition = currentPosition;
-				goto label_rendering;
+
+				float32x2 l = state.endPosition - state.startPosition;
+				bool lineIsDrawable = l.x >= 1.0f || l.x <= -1.0f || l.y >= 1.0f || l.y <= -1.0f;
+
+				if (lineIsDrawable)
+				{
+					state.outOfDate = false;
+
+					render();
+				}
+
+				state.notEmpty = lineIsDrawable;
+				enableTempLayerRendering = lineIsDrawable;
 			}
 		}
 		else
 		{
-			state.inProgress = true;
+			if (state.notEmpty)
+			{
+				apply();
+
+				enableTempLayerRendering = false;
+			}
+
 			state.startPosition = float32x2(pointerPosition) * viewToCanvasTransform;
 			state.endPosition = state.startPosition;
+
+			state.inProgress = true;
+			state.outOfDate = false;
+			state.notEmpty = false;
+			state.apply = false;
 		}
 	}
 	else
 	{
 		state.inProgress = false;
 
-		if (state.outOfDate)
+		if (state.outOfDate && state.notEmpty)
 		{
 			state.outOfDate = false;
-			goto label_rendering;
+
+			render();
 		}
 	}
 
-	return;
+	if (state.apply && state.notEmpty)
+	{
+		apply();
 
-label_rendering:
-	device->clear(tempTexture, 0xFFFFFF00_rgba);
-	device->setRenderTarget(tempTexture);
-	device->setViewport(rectu32(0, 0, canvasSize));
-	device->setScissorRect(selection);
-	device->setTransform2D(Matrix2x3::Identity());
+		state.inProgress = false;
+		state.outOfDate = false;
+		state.notEmpty = false;
+		state.apply = false;
 
-	geometryGenerator.drawLine(state.startPosition, state.endPosition, settings.width,
-		settings.color, settings.roundedStart, settings.roundedEnd);
-	geometryGenerator.flush();
+		enableTempLayerRendering = false;
+	}
 }
 
 void CanvasManager::updateInstrument_brightnessContrastGammaFilter()
@@ -186,11 +248,6 @@ void CanvasManager::updateInstrument_brightnessContrastGammaFilter()
 
 	if (state.apply)
 	{
-		state.apply = false;
-
-		disableCurrentLayerRendering = false;
-		enableTempLayerRendering = false;
-
 		device->copyTexture(layerTextures[currentLayer], tempTexture, selection.leftTop, selection);
 
 		resetInstrument();
@@ -241,7 +298,7 @@ LineSettings& CanvasManager::setInstrument_line(XLib::Color color, float32 width
 	bool roundedStart, bool roundedEnd)
 {
 	disableCurrentLayerRendering = false;
-	enableTempLayerRendering = true;
+	enableTempLayerRendering = false;
 
 	instrumentSettings.line.color = color;
 	instrumentSettings.line.width = width;
@@ -249,6 +306,8 @@ LineSettings& CanvasManager::setInstrument_line(XLib::Color color, float32 width
 	instrumentSettings.line.roundedEnd = roundedEnd;
 	instrumentState.line.inProgress = false;
 	instrumentState.line.outOfDate = false;
+	instrumentState.line.notEmpty = false;
+	instrumentState.line.apply = false;
 	currentInstrument = Instrument::Line;
 
 	return instrumentSettings.line;
@@ -290,6 +349,10 @@ void CanvasManager::applyInstrument()
 {
 	switch (currentInstrument)
 	{
+		case Instrument::Line:
+			instrumentState.line.apply = true;
+			break;
+
 		case Instrument::BrightnessContrastGammaFilter:
 			instrumentState.brightnessContrastGammaFilter.apply = true;
 			break;
