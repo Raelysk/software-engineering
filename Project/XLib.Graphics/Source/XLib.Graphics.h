@@ -20,8 +20,8 @@ struct ID3D11Texture2D;
 struct ID3D11ShaderResourceView;
 struct ID3D11RenderTargetView;
 
-struct IDXGIFactory3;
-struct IDXGISwapChain1;
+struct IDXGIFactory1;
+struct IDXGISwapChain;
 
 namespace XLib::Graphics
 {
@@ -148,9 +148,9 @@ namespace XLib::Graphics
 		friend class Device;
 
 	private:
-		XLib::Platform::COMPtr<IDXGISwapChain1> dxgiSwapChain;
+		XLib::Platform::COMPtr<IDXGISwapChain> dxgiSwapChain;
 
-		bool initialize(ID3D11Device* d3dDevice, IDXGIFactory3* dxgiFactory,
+		bool initialize(ID3D11Device* d3dDevice, IDXGIFactory1* dxgiFactory,
 			void* hWnd, uint32 width, uint32 height);
 		bool resize(ID3D11Device* d3dDevice, uint32 width, uint32 height);
 
@@ -191,7 +191,7 @@ namespace XLib::Graphics
 		static constexpr uint32 customEffectConstantsSizeLimit = 64;
 
 	private:
-		static XLib::Platform::COMPtr<IDXGIFactory3> dxgiFactory;
+		static XLib::Platform::COMPtr<IDXGIFactory1> dxgiFactory;
 
 		XLib::Platform::COMPtr<ID3D11Device> d3dDevice;
 		XLib::Platform::COMPtr<ID3D11DeviceContext> d3dContext;

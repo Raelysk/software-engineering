@@ -22,7 +22,7 @@ static_assert(
 	uint32(PrimitiveType::TriangleStrip) == D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,
 	"invalid PrimitiveType value");
 
-COMPtr<IDXGIFactory3> Device::dxgiFactory;
+COMPtr<IDXGIFactory1> Device::dxgiFactory;
 
 struct TransformConstants
 {
@@ -364,10 +364,10 @@ bool TextureRenderTarget::initialize(ID3D11Device* d3dDevice, uint32 width, uint
 // WindowRenderTarget =======================================================================//
 
 bool WindowRenderTarget::initialize(ID3D11Device* d3dDevice,
-	IDXGIFactory3* dxgiFactory, void* hWnd, uint32 width, uint32 height)
+	IDXGIFactory1* dxgiFactory, void* hWnd, uint32 width, uint32 height)
 {
-	dxgiFactory->CreateSwapChainForHwnd(d3dDevice, HWND(hWnd),
-		&DXGISwapChainDesc1(width, height), nullptr, nullptr, dxgiSwapChain.initRef());
+	dxgiFactory->CreateSwapChain(d3dDevice,
+		&DXGISwapChainDesc(HWND(hWnd), width, height), dxgiSwapChain.initRef());
 
 	COMPtr<ID3D11Texture2D> d3dBackTexture;
 	dxgiSwapChain->GetBuffer(0, d3dBackTexture.uuid(), d3dBackTexture.voidInitRef());
