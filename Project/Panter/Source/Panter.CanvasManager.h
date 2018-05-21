@@ -75,11 +75,21 @@ namespace Panter
 
 		struct InstrumentState_Line
 		{
+			enum class UserState : uint8
+			{
+				Standby = 0,
+				Draw,			// Pointer active. End position is modified.
+				Modify,			// Pointer active. Anchor position is modifier.
+			};
+
 			float32x2 startPosition;
 			float32x2 endPosition;
-			bool inProgress;
-			bool outOfDate;
+			float32x2 pointerFromAnchorOffset;
+			float32x2 prevModifyPointerPosition;
+			UserState userState;
+			bool anchorIndex;
 			bool notEmpty;
+			bool outOfDate;
 			bool apply;
 		};
 

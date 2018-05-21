@@ -1,6 +1,10 @@
+#include <XLib.Debug.h>
 #include <XLib.Vectors.Arithmetics.h>
+#include <XLib.Vectors.Math.h>
 
 #include "Panter.CanvasManager.h"
+
+#include "Panter.Constants.h"
 
 using namespace XLib;
 using namespace XLib::Graphics;
@@ -103,6 +107,8 @@ void CanvasManager::updateInstrument_brush()
 
 void CanvasManager::updateInstrument_line()
 {
+	using UserState = InstrumentState_Line::UserState;
+
 	InstrumentState_Line &state = instrumentState.line;
 	LineSettings &settings = instrumentSettings.line;
 
@@ -142,72 +148,130 @@ void CanvasManager::updateInstrument_line()
 		device->setTexture(tempTexture);
 
 		device->draw2D(PrimitiveType::TriangleList, Effect::TexturedUnorm,
-			quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
+			quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);		
 	};
+
+	auto checkIfIsDrawable = [&]() -> bool
+	{
+		float32x2 l = state.endPosition - state.startPosition;
+		return l.x >= 1.0f || l.x <= -1.0f || l.y >= 1.0f || l.y <= -1.0f;
+	};
+
+	if (state.apply)
+	{
+		if (state.notEmpty)
+		{
+			state.notEmpty = false;
+
+			if (state.outOfDate)
+			{
+				state.outOfDate = false;
+				render();
+			}
+
+			apply();
+
+			enableTempLayerRendering = false;
+		}
+
+		state.userState = UserState::Standby;
+		state.apply = false;
+	}
 
 	if (pointerIsActive)
 	{
-		if (state.inProgress)
-		{
-			float32x2 currentPosition = float32x2(pointerPosition) * viewToCanvasTransform;
-			if (state.endPosition != currentPosition || state.outOfDate)
-			{
-				state.endPosition = currentPosition;
-
-				float32x2 l = state.endPosition - state.startPosition;
-				bool lineIsDrawable = l.x >= 1.0f || l.x <= -1.0f || l.y >= 1.0f || l.y <= -1.0f;
-
-				if (lineIsDrawable)
-				{
-					state.outOfDate = false;
-
-					render();
-				}
-
-				state.notEmpty = lineIsDrawable;
-				enableTempLayerRendering = lineIsDrawable;
-			}
-		}
-		else
+		if (state.userState == UserState::Standby)
 		{
 			if (state.notEmpty)
 			{
-				apply();
+				// Check if we are moving previus line anchors or starting new line.
 
-				enableTempLayerRendering = false;
+				float32x2 canvasSpacePointerPosition = float32x2(pointerPosition) * viewToCanvasTransform;
+				float32 startDistance = VectorMath::Length(state.startPosition - canvasSpacePointerPosition);
+				float32 endDistance = VectorMath::Length(state.endPosition - canvasSpacePointerPosition);
+
+				bool potentialAnchorIndex = startDistance > endDistance;
+				float32 minDistance = potentialAnchorIndex ? endDistance : startDistance;
+
+				if (minDistance <= AnchorGrabDistance)
+				{
+					// Grabbing anchor.
+					state.pointerFromAnchorOffset = canvasSpacePointerPosition -
+						(potentialAnchorIndex ? state.endPosition : state.startPosition);
+					state.prevModifyPointerPosition = canvasSpacePointerPosition;
+					state.anchorIndex = potentialAnchorIndex;
+					state.userState = UserState::Modify;
+				}
+				else
+				{
+					// Starting new line.
+					apply();
+
+					state.startPosition = float32x2(pointerPosition) * viewToCanvasTransform;
+					state.endPosition = state.startPosition;
+					state.userState = UserState::Draw;
+					state.notEmpty = false;
+
+					enableTempLayerRendering = false;
+				}
 			}
+			else
+			{
+				state.startPosition = float32x2(pointerPosition) * viewToCanvasTransform;
+				state.endPosition = state.startPosition;
+				state.userState = UserState::Draw;
+				state.notEmpty = false;
+				state.outOfDate = false;
+			}
+		}
+		else if (state.userState == UserState::Draw)
+		{
+			float32x2 canvasSpacePointerPosition = float32x2(pointerPosition) * viewToCanvasTransform;
+			if (state.endPosition != canvasSpacePointerPosition)
+			{
+				state.endPosition = canvasSpacePointerPosition;
 
-			state.startPosition = float32x2(pointerPosition) * viewToCanvasTransform;
-			state.endPosition = state.startPosition;
+				state.notEmpty = checkIfIsDrawable();
+				if (state.notEmpty)
+				{
+					state.outOfDate = false;
+					render();
+				}
 
-			state.inProgress = true;
-			state.outOfDate = false;
-			state.notEmpty = false;
-			state.apply = false;
+				enableTempLayerRendering = state.notEmpty;
+			}
+		}
+		else if (state.userState == UserState::Modify)
+		{
+			float32x2 canvasSpacePointerPosition = float32x2(pointerPosition) * viewToCanvasTransform;
+			if (state.prevModifyPointerPosition != canvasSpacePointerPosition)
+			{
+				state.prevModifyPointerPosition = canvasSpacePointerPosition;
+
+				float32x2 newAnchorPosition = canvasSpacePointerPosition - state.pointerFromAnchorOffset;
+				if (state.anchorIndex)
+					state.endPosition = newAnchorPosition;
+				else
+					state.startPosition = newAnchorPosition;
+
+				state.notEmpty = checkIfIsDrawable();
+				if (state.notEmpty)
+				{
+					state.outOfDate = false;
+					render();
+				}
+
+				enableTempLayerRendering = state.notEmpty;
+			}
 		}
 	}
 	else
+		state.userState = UserState::Standby;
+
+	if (state.outOfDate && state.notEmpty)
 	{
-		state.inProgress = false;
-
-		if (state.outOfDate && state.notEmpty)
-		{
-			state.outOfDate = false;
-
-			render();
-		}
-	}
-
-	if (state.apply && state.notEmpty)
-	{
-		apply();
-
-		state.inProgress = false;
 		state.outOfDate = false;
-		state.notEmpty = false;
-		state.apply = false;
-
-		enableTempLayerRendering = false;
+		render();
 	}
 }
 
@@ -304,10 +368,8 @@ LineSettings& CanvasManager::setInstrument_line(XLib::Color color, float32 width
 	instrumentSettings.line.width = width;
 	instrumentSettings.line.roundedStart = roundedStart;
 	instrumentSettings.line.roundedEnd = roundedEnd;
-	instrumentState.line.inProgress = false;
+	instrumentState.line.userState = InstrumentState_Line::UserState::Standby;
 	instrumentState.line.outOfDate = false;
-	instrumentState.line.notEmpty = false;
-	instrumentState.line.apply = false;
 	currentInstrument = Instrument::Line;
 
 	return instrumentSettings.line;
