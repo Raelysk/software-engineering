@@ -369,7 +369,9 @@ LineSettings& CanvasManager::setInstrument_line(XLib::Color color, float32 width
 	instrumentSettings.line.roundedStart = roundedStart;
 	instrumentSettings.line.roundedEnd = roundedEnd;
 	instrumentState.line.userState = InstrumentState_Line::UserState::Standby;
+	instrumentState.line.notEmpty = false;
 	instrumentState.line.outOfDate = false;
+	instrumentState.line.apply = false;
 	currentInstrument = Instrument::Line;
 
 	return instrumentSettings.line;
