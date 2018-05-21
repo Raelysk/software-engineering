@@ -10,5 +10,9 @@ namespace XLib
 	protected:
 		NonCopyable() = default;
 		~NonCopyable() = default;
+
+	public:
+		NonCopyable(NonCopyable&&) = default;
+		NonCopyable& operator = (NonCopyable&&) = default;
 	};
 }

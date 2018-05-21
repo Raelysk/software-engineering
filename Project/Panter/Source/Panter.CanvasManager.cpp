@@ -222,6 +222,9 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 	// canvas
 	for (uint16 i = 0; i < layerCount; i++)
 	{
+		if (!layerRenderingFlags[i])
+			continue;
+
 		if (i != currentLayer || !disableCurrentLayerRendering)
 		{
 			device->setTexture(layerTextures[i]);
@@ -309,6 +312,7 @@ void CanvasManager::setCurrentLayer(uint16 layerIndex)
 uint16 CanvasManager::createLayer(uint16 insertAtIndex)
 {
 	device->createTextureRenderTarget(layerTextures[layerCount], canvasSize.x, canvasSize.y);
+	layerRenderingFlags[layerCount] = true;
 
 	if (!layerCount)
 		device->createTextureRenderTarget(tempTexture, canvasSize.x, canvasSize.y);
@@ -318,7 +322,23 @@ uint16 CanvasManager::createLayer(uint16 insertAtIndex)
 
 void CanvasManager::removeLayer(uint16 index)
 {
+	Debug::CrashCondition(index >= layerCount, DbgMsgFmt("invalid layer index"));
 
+	layerTextures[index].destroy();
+	layerCount--;
+
+	for (uint16 i = index + 1; i <= layerCount; i++)
+	{
+		layerTextures[i - 1] = move(layerTextures[i]);
+		layerRenderingFlags[i - 1] = layerRenderingFlags[i];
+	}
+}
+
+void CanvasManager::enableLayer(uint16 index, bool enabled)
+{
+	Debug::CrashCondition(index >= layerCount, DbgMsgFmt("invalid layer index"));
+
+	layerRenderingFlags[index] = enabled;
 }
 
 void CanvasManager::uploadLayerRegion(uint16 dstLayerIndex, const rectu32& dstRegion,

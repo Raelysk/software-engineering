@@ -78,8 +78,8 @@ namespace Panter
 			enum class UserState : uint8
 			{
 				Standby = 0,
-				Draw,			// Pointer active. End position is modified.
-				Modify,			// Pointer active. Anchor position is modifier.
+				Draw,		// Pointer active. End position is modified.
+				Modify,		// Pointer active. Anchor position is modifier.
 			};
 
 			float32x2 startPosition;
@@ -110,6 +110,7 @@ namespace Panter
 
 		// canvas data
 		XLib::Graphics::TextureRenderTarget layerTextures[16];
+		bool layerRenderingFlags[16] = {};
 		XLib::Graphics::TextureRenderTarget tempTexture;
 		uint32x2 canvasSize = { 0, 0 };
 		uint16 layerCount = 0;
@@ -191,6 +192,7 @@ namespace Panter
 		uint16 createLayer(uint16 insertAtIndex = uint16(-1));
 		void removeLayer(uint16 index);
 		//void moveLayer(uint16 fromIndex, uint16 toIndex);
+		void enableLayer(uint16 index, bool enabled);
 
 		void uploadLayerRegion(uint16 dstLayerIndex, const rectu32& dstRegion,
 			const void* srcData, uint32 srcDataStride = 0);

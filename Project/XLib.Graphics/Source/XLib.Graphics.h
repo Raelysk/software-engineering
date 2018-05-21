@@ -87,7 +87,11 @@ namespace XLib::Graphics
 		bool initialize(ID3D11Device* d3dDevice, uint32 size, const void* initialData);
 
 	public:
+		Buffer() = default;
+		~Buffer() = default;
 
+		Buffer(Buffer&&) = default;
+		Buffer& operator = (Buffer&&) = default;
 	};
 
 	class Texture : public XLib::NonCopyable
@@ -108,6 +112,9 @@ namespace XLib::Graphics
 		Texture() = default;
 		~Texture() = default;
 
+		Texture(Texture&&) = default;
+		Texture& operator = (Texture&&) = default;
+
 		inline void destroy() { this->~Texture(); }
 	};
 
@@ -125,6 +132,9 @@ namespace XLib::Graphics
 		RenderTarget() = default;
 		~RenderTarget() = default;
 
+		RenderTarget(RenderTarget&&) = default;
+		RenderTarget& operator = (RenderTarget&&) = default;
+
 		inline void destroy() { this->~RenderTarget(); }
 	};
 
@@ -139,6 +149,9 @@ namespace XLib::Graphics
 	public:
 		TextureRenderTarget() = default;
 		~TextureRenderTarget() = default;
+
+		TextureRenderTarget(TextureRenderTarget&&) = default;
+		TextureRenderTarget& operator = (TextureRenderTarget&&) = default;
 
 		inline void destroy() { this->~TextureRenderTarget(); }
 	};
@@ -157,6 +170,9 @@ namespace XLib::Graphics
 	public:
 		WindowRenderTarget() = default;
 		~WindowRenderTarget() = default;
+
+		WindowRenderTarget(WindowRenderTarget&&) = default;
+		WindowRenderTarget& operator = (WindowRenderTarget&&) = default;
 
 		inline void destroy() { this->~WindowRenderTarget(); }
 
@@ -183,6 +199,9 @@ namespace XLib::Graphics
 	public:
 		CustomEffect() = default;
 		~CustomEffect() = default;
+
+		CustomEffect(CustomEffect&&) = default;
+		CustomEffect& operator = (CustomEffect&&) = default;
 	};
 
 	class Device : public XLib::NonCopyable

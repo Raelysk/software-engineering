@@ -22,6 +22,24 @@ namespace XLib::Platform
 		COMPtr() = default;
 		inline ~COMPtr() { destroy(); }
 
+		inline COMPtr(COMPtr&& that)
+		{
+			destroy();
+
+			ptr = that.ptr;
+			that.ptr = nullptr;
+		}
+
+		inline COMPtr& operator = (COMPtr&& that)
+		{
+			destroy();
+
+			ptr = that.ptr;
+			that.ptr = nullptr;
+
+			return *this;
+		}
+
 		inline void destroy()
 		{
 			if (ptr)
