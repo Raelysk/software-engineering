@@ -198,15 +198,18 @@ void Panter::MainWindow::ProcessGui() {
 		ImGui::Begin("Instrument properties", &showInstrumentProperties, windowFlags);
 
 		ImGui::BeginGroup();
-
 		if (ImGui::ColorButton("Main color", mainColor, ImGuiColorEditFlags_AlphaPreviewHalf, ImVec2(colorButtonSize, colorButtonSize))) {
 			isMainColorPickerChoosen = true;
 		}
-
 		if (ImGui::ColorButton("Secondary color", secondaryColor, ImGuiColorEditFlags_AlphaPreviewHalf, ImVec2(colorButtonSize, colorButtonSize))) {
 			isMainColorPickerChoosen = false;
 		}
 
+		if (isMainColorPickerChoosen) {
+			ImGui::Text("Main");
+		} else {
+			ImGui::Text("Secondary");
+		}
 		ImGui::EndGroup();
 		ImGui::SameLine();
 
@@ -332,12 +335,16 @@ void Panter::MainWindow::ProcessGui() {
 			enableLayer[currentLayerId] = true;
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("Remove", ImVec2(buttonSize * 1.5f, buttonSize * 0.5f))) {
+		if (ImGui::Button("Remove", ImVec2(buttonSize * 1.5f, buttonSize * 0.5f)) && numberOfLayers > 1) {
 			canvasManager.removeLayer(currentLayerId);
 
 			for (int i = currentLayerId; i < numberOfLayers - 1; ++i) {
 				layerNames[i] = std::move(layerNames[i + 1]);
 				enableLayer[i] = enableLayer[i + 1];
+			}
+
+			if (currentLayerId == numberOfLayers - 1) {
+				canvasManager.setCurrentLayer(currentLayerId - 1);
 			}
 
 			numberOfLayers = canvasManager.getLayerCount();
@@ -354,7 +361,7 @@ void Panter::MainWindow::ProcessGui() {
 			ImGui::PushID(i);
 
 			if (ImGui::Checkbox("##checkbox", &enableLayer[i])) {
-				//Pass new layer state to canvas manager
+				canvasManager.enableLayer(i, enableLayer[i]);
 			}
 			ImGui::SameLine();
 
@@ -452,7 +459,7 @@ void Panter::MainWindow::ProcessGui() {
 		}
 
 		if (ImGui::Button("Create", ImVec2(buttonSize, buttonSize * 0.5f))) {
-			for (int i = canvasManager.getLayerCount(); i > 0; --i) {
+			for (int i = canvasManager.getLayerCount() - 1; i > 0; --i) {
 				canvasManager.removeLayer((uint16)i);
 				layerNames[i] = "";
 			}
@@ -460,6 +467,10 @@ void Panter::MainWindow::ProcessGui() {
 			lastLayerNumber = 0;
 
 			canvasManager.resizeDiscardingContents({(uint32)createWidth, (uint32)createHeight });
+			currentFileName.clear();
+			std::wstring title = L"Panter - Untitled";
+			setTitle(title.c_str());
+
 			openCreateWindow = false;
 		}
 		ImGui::SameLine();

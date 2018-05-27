@@ -14,7 +14,7 @@ void Program::Run()
 		return;
 
 	MainWindow window(device);
-	window.create(1280, 720, L"Panter", true);
+	window.create(1280, 720, L"Panter - Untitled", true);
 
 	while (window.isOpened())
 	{

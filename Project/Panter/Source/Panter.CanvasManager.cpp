@@ -37,9 +37,6 @@ void CanvasManager::destroy()
 
 void CanvasManager::resizeDiscardingContents(uint32x2 newCanvasSize)
 {
-	if (canvasSize == newCanvasSize)
-		return;
-
 	for (uint32 i = 0; i < layerCount; i++)
 	{
 		layerTextures[i].destroy();

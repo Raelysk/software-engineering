@@ -207,12 +207,22 @@ void Panter::MainWindow::openFile() {
         uint32 width = 0, height = 0;
         ImageLoader::Load(filename, imageData, width, height);
 
-        uint32 dstWidth = min(width, canvasManager.getCanvasWidth());
-        uint32 dstHeight = min(height, canvasManager.getCanvasHeight());
+        rectu32 dstRegion(0, 0, width, height);
 
-        rectu32 dstRegion(0, 0, dstWidth, dstHeight);
+        for (int i = canvasManager.getLayerCount() - 1; i > 0; --i) {
+            canvasManager.removeLayer((uint16)i);
+            layerNames[i] = "";
+        }
+        layerNames[0] = "Layer 0";
+        lastLayerNumber = 0;
 
+        canvasManager.resizeDiscardingContents({width, height});
         canvasManager.uploadLayerRegion(canvasManager.getCurrentLayerId(), dstRegion, imageData, width * 4);
+
+        currentFileName.assign(filename);
+
+        std::wstring title = L"Panter - " + currentFileName;
+        setTitle(title.c_str());
     }
 }
 
