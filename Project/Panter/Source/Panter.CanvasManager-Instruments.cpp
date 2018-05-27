@@ -71,7 +71,7 @@ void CanvasManager::updateInstrument_pencil()
 	if (prevPointerPosition == pointerPosition)
 		return;
 
-	device->setRenderTarget(layerTextures[0]);
+	device->setRenderTarget(layerTextures[currentLayer]);
 	device->setViewport(rectu32(0, 0, canvasSize));
 	device->setScissorRect(selection);
 	device->setTransform2D(Matrix2x3::Identity());

@@ -322,7 +322,11 @@ void CanvasManager::removeLayer(uint16 index)
 	Debug::CrashCondition(index >= layerCount, DbgMsgFmt("invalid layer index"));
 
 	layerTextures[index].destroy();
-	layerCount--;
+	--layerCount;
+	if (index == currentLayer && currentLayer == layerCount) 
+	{
+		--currentLayer;
+	}
 
 	for (uint16 i = index + 1; i <= layerCount; i++)
 	{
