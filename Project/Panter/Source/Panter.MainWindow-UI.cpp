@@ -343,10 +343,6 @@ void Panter::MainWindow::ProcessGui() {
 				enableLayer[i] = enableLayer[i + 1];
 			}
 
-			if (currentLayerId == numberOfLayers - 1) {
-				canvasManager.setCurrentLayer(currentLayerId - 1);
-			}
-
 			numberOfLayers = canvasManager.getLayerCount();
 			currentLayerId = canvasManager.getCurrentLayerId();
 		}
