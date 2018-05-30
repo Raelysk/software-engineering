@@ -211,14 +211,14 @@ void GeometryGenerator::drawVerticalGradientRect(const rectf32& rect, Color topC
 void GeometryGenerator::drawLeftHalfEllipseOnDiameter(float32x2 diameterStart, float32x2 diameterEnd,
 	Color color, uint32 segmentCount)
 {
-	VertexColor2D *vertices = allocateVertices<VertexColor2D>(segmentCount * 3);
-
 	float32 angleStep = Math::PiF32 / float32(segmentCount);
 	float32 angle = angleStep;
 	float32x2 prevVertex = diameterEnd;
 
 	float32x2 diameter = (diameterEnd - diameterStart) / 2.0f;
 	float32x2 side = VectorMath::NormalLeft(diameter);
+
+	VertexColor2D *vertices = allocateVertices<VertexColor2D>(segmentCount * 3);
 
 	for (uint32 i = 0; i < segmentCount; i++)
 	{
@@ -233,6 +233,71 @@ void GeometryGenerator::drawLeftHalfEllipseOnDiameter(float32x2 diameterStart, f
 
 		prevVertex = newVertex;
 		angle += angleStep;
+	}
+}
+
+void GeometryGenerator::drawEllipseBorder(float32x2 center, float32x2 radius,
+	Color color, float32 width, uint32 segmentCount)
+{
+	VertexColor2D *vertices = allocateVertices<VertexColor2D>(segmentCount * 6);
+
+	float32 aspect = radius.y / radius.x;
+
+	float32 w = width * 0.5f;
+	float32 angleStep = Math::PiF32 * 2.0f / float32(segmentCount);
+	float32x2 prevInner = float32x2(center.x + radius.x, center.y);
+	float32x2 prevOuter = prevInner;
+	prevInner.x -= w;
+	prevOuter.x += w;
+
+	float32x2 prevVertex = center + float32x2(Math::Cos(angleStep), Math::Sin(angleStep)) * radius;
+
+	for (uint32 i = 0; i < segmentCount; i++)
+	{
+		float32 angle = float32(i + 1) * angleStep;
+		float32x2 cosSin(Math::Cos(angle), Math::Sin(angle));
+
+		float32x2 base = center + cosSin * radius;
+		float32x2 normal = VectorMath::Normalize({ cosSin.x * aspect, cosSin.y });
+		float32x2 normalOffset = normal * w;
+
+		float32x2 newInner = base - normalOffset;
+		float32x2 newOuter = base + normalOffset;
+
+		vertices[i * 6 + 0] = { prevInner, color };
+		vertices[i * 6 + 1] = { prevOuter, color };
+		vertices[i * 6 + 2] = { newOuter,  color };
+		vertices[i * 6 + 3] = { prevInner, color };
+		vertices[i * 6 + 4] = { newOuter,  color };
+		vertices[i * 6 + 5] = { newInner,  color };
+
+		prevInner = newInner;
+		prevOuter = newOuter;
+	}
+}
+
+void GeometryGenerator::drawFilledEllipse(float32x2 center, float32x2 radius,
+	Color color, uint32 segmentCount)
+{
+	uint32 fillTriangleCount = segmentCount - 2;
+	VertexColor2D *vertices = allocateVertices<VertexColor2D>(fillTriangleCount * 3);
+
+	float32x2 startVertex = center;
+	startVertex.x += radius.x;
+
+	float32 angleStep = Math::PiF32 * 2.0f / float32(segmentCount);
+	float32x2 prevVertex = center + float32x2(Math::Cos(angleStep), Math::Sin(angleStep)) * radius;
+
+	for (uint32 i = 0; i < fillTriangleCount; i++)
+	{
+		float32 angle = float32(i + 2) * angleStep;
+		float32x2 newVertex = center + float32x2(Math::Cos(angle), Math::Sin(angle)) * radius;
+
+		vertices[i * 3 + 0] = { startVertex, color };
+		vertices[i * 3 + 1] = { prevVertex,  color };
+		vertices[i * 3 + 2] = { newVertex,   color };
+
+		prevVertex = newVertex;
 	}
 }
 

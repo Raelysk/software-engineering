@@ -297,9 +297,22 @@ void CanvasManager::updateInstrument_shape()
 			rect.bottom = state.startPosition.y;
 		}
 
-		geometryGenerator.drawFilledRectWithBorder(rect,
-			settings.fillColor, settings.borderColor, settings.borderWidth);
-		geometryGenerator.flush();
+		if (settings.shape == Shape::Rectangle)
+		{
+			geometryGenerator.drawFilledRectWithBorder(rect,
+				settings.fillColor, settings.borderColor, settings.borderWidth);
+		}
+		else if (settings.shape == Shape::Circle)
+		{
+			settings.borderColor.a = 255;
+
+			float32x2 center((rect.left + rect.right) * 0.5f, (rect.top + rect.bottom) * 0.5f);
+			float32x2 radius = rect.getSize() * 0.5f;
+
+			geometryGenerator.drawFilledEllipse(center, radius, settings.fillColor);
+			geometryGenerator.drawEllipseBorder(center, radius, settings.borderColor, settings.borderWidth);
+			geometryGenerator.flush();
+		}
 	};
 
 	if (pointerIsActive)

@@ -42,5 +42,7 @@ namespace XLib::Graphics
 		void drawRectShadow(const rectf32& rect, float32 width, Color color);
 		void drawVerticalGradientRect(const rectf32& rect, Color topColor, Color bottomColor);
 		void drawLeftHalfEllipseOnDiameter(float32x2 diameterStart, float32x2 diameterEnd, Color color, uint32 segmentCount = 16);
+		void drawEllipseBorder(float32x2 center, float32x2 radius, Color color, float32 width, uint32 segmentCount = 64);
+		void drawFilledEllipse(float32x2 center, float32x2 radius, Color color, uint32 segmentCount = 64);
 	};
 }
