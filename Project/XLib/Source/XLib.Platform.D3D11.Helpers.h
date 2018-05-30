@@ -13,20 +13,21 @@ inline D3D11_BUFFER_DESC D3D11BufferDesc(UINT size, UINT bindFlags, UINT structu
 	return result;
 }
 
-inline D3D11_TEXTURE2D_DESC D3D11Texture2DDesc(UINT width, UINT height, DXGI_FORMAT format,
-	UINT bindFlags = D3D11_BIND_SHADER_RESOURCE)
+inline D3D11_TEXTURE2D_DESC D3D11Texture2DDesc(UINT width, UINT height, DXGI_FORMAT format, UINT mipLevels = 0,
+	UINT bindFlags = D3D11_BIND_SHADER_RESOURCE, D3D11_USAGE usage = D3D11_USAGE_DEFAULT,
+	UINT cpuAccessFlags = 0)
 {
 	D3D11_TEXTURE2D_DESC result;
 	result.Width = width;
 	result.Height = height;
-	result.MipLevels = 0;
+	result.MipLevels = mipLevels;
 	result.ArraySize = 1;
 	result.Format = format;
 	result.SampleDesc.Count = 1;
 	result.SampleDesc.Quality = 0;
-	result.Usage = D3D11_USAGE_DEFAULT;
+	result.Usage = usage;
 	result.BindFlags = bindFlags;
-	result.CPUAccessFlags = 0;
+	result.CPUAccessFlags = cpuAccessFlags;
 	result.MiscFlags = 0;
 	return result;
 }

@@ -26,14 +26,14 @@ COMPtr<IDXGIFactory1> Device::dxgiFactory;
 
 struct TransformConstants
 {
-    float32x4 tranfromRow0;
-    float32x4 tranfromRow1;
+	float32x4 tranfromRow0;
+	float32x4 tranfromRow1;
 
-    inline void set(const Matrix2x3& transform)
-    {
-        tranfromRow0 = { transform[0][0], transform[0][1], transform[0][2], 0.0f };
-        tranfromRow1 = { transform[1][0], transform[1][1], transform[1][2], 0.0f };
-    }
+	inline void set(const Matrix2x3& transform)
+	{
+		tranfromRow0 = { transform[0][0], transform[0][1], transform[0][2], 0.0f };
+		tranfromRow1 = { transform[1][0], transform[1][1], transform[1][2], 0.0f };
+	}
 };
 
 bool Device::initialize()
@@ -59,7 +59,7 @@ bool Device::initialize()
 		{ "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-    D3D11_INPUT_ELEMENT_DESC d3dVertexTexturedUnorm2DILDesc[] =
+	D3D11_INPUT_ELEMENT_DESC d3dVertexTexturedUnorm2DILDesc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R16G16_UNORM, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -70,24 +70,24 @@ bool Device::initialize()
 	d3dDevice->CreateVertexShader(Shaders::Color2DVS.data, Shaders::Color2DVS.size, nullptr, d3dColor2DVS.initRef());
 	d3dDevice->CreatePixelShader(Shaders::ColorPS.data, Shaders::ColorPS.size, nullptr, d3dColorPS.initRef());
 
-    d3dDevice->CreateInputLayout(d3dVertexTexturedUnorm2DILDesc, countof(d3dVertexTexturedUnorm2DILDesc),
-        Shaders::Textured2DVS.data, Shaders::Textured2DVS.size, d3dTexturedUnorm2DIL.initRef());
-    d3dDevice->CreateVertexShader(Shaders::Textured2DVS.data, Shaders::Textured2DVS.size, nullptr, d3dTextured2DVS.initRef());
-    d3dDevice->CreatePixelShader(Shaders::TexturedPS.data, Shaders::TexturedPS.size, nullptr, d3dTexturedPS.initRef());
+	d3dDevice->CreateInputLayout(d3dVertexTexturedUnorm2DILDesc, countof(d3dVertexTexturedUnorm2DILDesc),
+		Shaders::Textured2DVS.data, Shaders::Textured2DVS.size, d3dTexturedUnorm2DIL.initRef());
+	d3dDevice->CreateVertexShader(Shaders::Textured2DVS.data, Shaders::Textured2DVS.size, nullptr, d3dTextured2DVS.initRef());
+	d3dDevice->CreatePixelShader(Shaders::TexturedPS.data, Shaders::TexturedPS.size, nullptr, d3dTexturedPS.initRef());
 
 	d3dDevice->CreateRasterizerState(
 		&D3D11RasterizerDesc(D3D11_FILL_SOLID, D3D11_CULL_BACK, false, 0, 0.0f, 0.0f, false, true),
 		d3dDefaultRasterizerState.initRef());
 
-    d3dDevice->CreateSamplerState(
+	d3dDevice->CreateSamplerState(
 		&D3D11SamplerDesc(D3D11_FILTER_MIN_MAG_MIP_LINEAR),
 		d3dDefaultSamplerState.initRef());
 
-    d3dDevice->CreateBlendState(
-        &D3D11BlendDesc(
-            D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_OP_ADD, D3D11_BLEND_INV_SRC_ALPHA,
-            D3D11_BLEND_ONE, D3D11_BLEND_OP_ADD, D3D11_BLEND_ONE),
-        d3dDefaultBlendState.initRef());
+	d3dDevice->CreateBlendState(
+		&D3D11BlendDesc(
+			D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_OP_ADD, D3D11_BLEND_INV_SRC_ALPHA,
+			D3D11_BLEND_ONE, D3D11_BLEND_OP_ADD, D3D11_BLEND_ONE),
+		d3dDefaultBlendState.initRef());
 
 	d3dDevice->CreateBuffer(
 		&D3D11BufferDesc(sizeof(TransformConstants), D3D11_BIND_CONSTANT_BUFFER),
@@ -96,8 +96,8 @@ bool Device::initialize()
 		&D3D11BufferDesc(customEffectConstantsSizeLimit, D3D11_BIND_CONSTANT_BUFFER),
 		nullptr, d3dCustomEffectConstantBuffer.initRef());
 
-    transform = Matrix2x3::Identity();
-    transformUpToDate = false;
+	transform = Matrix2x3::Identity();
+	transformUpToDate = false;
 
 	return true;
 }
@@ -115,8 +115,8 @@ void Device::setRenderTarget(RenderTarget& renderTarget)
 
 void Device::setViewport(const rectu32& viewport)
 {
-    this->viewport = viewport;
-    transformUpToDate = false;
+	this->viewport = viewport;
+	transformUpToDate = false;
 }
 
 void Device::setScissorRect(const rectu32& rect)
@@ -126,14 +126,14 @@ void Device::setScissorRect(const rectu32& rect)
 
 void Device::setTransform2D(const Matrix2x3& transform)
 {
-    this->transform = transform;
-    transformUpToDate = false;
+	this->transform = transform;
+	transformUpToDate = false;
 }
 
 void Device::setTexture(Texture& texture, uint32 slot)
 {
-    ID3D11ShaderResourceView *d3dSRVs[] = { texture.d3dSRV };
-    d3dContext->PSSetShaderResources(0, 1, d3dSRVs);
+	ID3D11ShaderResourceView *d3dSRVs[] = { texture.d3dSRV };
+	d3dContext->PSSetShaderResources(0, 1, d3dSRVs);
 }
 
 void Device::setCustomEffectConstants(const void* data, uint32 size)
@@ -145,18 +145,48 @@ void Device::setCustomEffectConstants(const void* data, uint32 size)
 
 void Device::uploadBuffer(Buffer& buffer, const void* srcData, uint32 baseOffset, uint32 size)
 {
-    d3dContext->UpdateSubresource(buffer.d3dBuffer, 0,
-        &D3D11Box(baseOffset, baseOffset + size), srcData, 0, 0);
+	d3dContext->UpdateSubresource(buffer.d3dBuffer, 0,
+		&D3D11Box(baseOffset, baseOffset + size), srcData, 0, 0);
 }
 
 void Device::uploadTexture(Texture& texture, const rectu32& region,
-    const void* srcData, uint32 srcDataStride)
+	const void* srcData, uint32 srcDataStride)
 {
 	if (!srcDataStride)
-		srcDataStride = (region.right - region.left) * 4;
+		srcDataStride = region.getWidth() * 4;
 
-    d3dContext->UpdateSubresource(texture.d3dTexture, 0,
-        &D3D11Box(region.left, region.right, region.top, region.bottom), srcData, srcDataStride, 0);
+	d3dContext->UpdateSubresource(texture.d3dTexture, 0,
+		&D3D11Box(region.left, region.right, region.top, region.bottom), srcData, srcDataStride, 0);
+}
+
+void Device::downloadTexture(Texture& texture, const rectu32& region,
+	void* dstData, uint32 dstDataStride)
+{
+	uint32 width = region.getWidth();
+	uint32 height = region.getHeight();
+
+	if (!dstDataStride)
+		dstDataStride = width * 4;
+
+	COMPtr<ID3D11Texture2D> d3dStagingTexture;
+	d3dDevice->CreateTexture2D(&D3D11Texture2DDesc(width, height,
+			DXGI_FORMAT_R8G8B8A8_UNORM, 1, 0, D3D11_USAGE_STAGING, D3D11_CPU_ACCESS_READ),
+		nullptr, d3dStagingTexture.initRef());
+
+	d3dContext->CopySubresourceRegion(d3dStagingTexture, 0, 0, 0, 0,
+		texture.d3dTexture, 0, &D3D11Box(region.left, region.right, region.top, region.bottom));
+
+	D3D11_MAPPED_SUBRESOURCE d3dMappedSubresource = {};
+	d3dContext->Map(d3dStagingTexture, 0, D3D11_MAP_READ, 0, &d3dMappedSubresource);
+
+	for (uint32 i = 0; i < height; i++)
+	{
+		Memory::Copy(to<byte*>(dstData) + dstDataStride * i,
+			to<byte*>(d3dMappedSubresource.pData) + d3dMappedSubresource.RowPitch * i,
+			d3dMappedSubresource.RowPitch);
+	}
+
+	d3dContext->Unmap(d3dStagingTexture, 0);
 }
 
 void Device::copyTexture(Texture& dstTexture, Texture& srcTexture, uint32x2 dstLocation, const rectu32& srcRegion)
@@ -171,7 +201,7 @@ void Device::draw2D(PrimitiveType primitiveType, Effect effect, Buffer& vertexBu
 	ID3D11InputLayout *d3dIL = nullptr;
 	ID3D11VertexShader *d3dVS = nullptr;
 	ID3D11PixelShader *d3dPS = nullptr;
-    ID3D11SamplerState *d3dSS = nullptr;
+	ID3D11SamplerState *d3dSS = nullptr;
 
 	switch (effect)
 	{
@@ -181,15 +211,15 @@ void Device::draw2D(PrimitiveType primitiveType, Effect effect, Buffer& vertexBu
 			d3dPS = d3dColorPS;
 			break;
 
-		//case Effect::GlobalColor:
-			//break;
+			//case Effect::GlobalColor:
+				//break;
 
-        case Effect::TexturedUnorm:
-            d3dIL = d3dTexturedUnorm2DIL;
-            d3dVS = d3dTextured2DVS;
-            d3dPS = d3dTexturedPS;
-            d3dSS = d3dDefaultSamplerState;
-            break;
+		case Effect::TexturedUnorm:
+			d3dIL = d3dTexturedUnorm2DIL;
+			d3dVS = d3dTextured2DVS;
+			d3dPS = d3dTexturedPS;
+			d3dSS = d3dDefaultSamplerState;
+			break;
 
 		default:
 			return;
@@ -198,41 +228,41 @@ void Device::draw2D(PrimitiveType primitiveType, Effect effect, Buffer& vertexBu
 	d3dContext->IASetInputLayout(d3dIL);
 	d3dContext->VSSetShader(d3dVS, nullptr, 0);
 	d3dContext->PSSetShader(d3dPS, nullptr, 0);
-    if (d3dSS)
-        d3dContext->PSSetSamplers(0, 1, &d3dSS);
+	if (d3dSS)
+		d3dContext->PSSetSamplers(0, 1, &d3dSS);
 
 	ID3D11Buffer *d3dVSCB = d3dTransformConstantBuffer;
 	d3dContext->VSSetConstantBuffers(0, 1, &d3dVSCB);
 
-    if (!transformUpToDate)
-    {
-        Matrix2x3 ndcToScreenSpaceTransform =
-            Matrix2x3::VerticalReflection() *
-            Matrix2x3::Translation(-1.0f, -1.0f) *
-            Matrix2x3::Scale(2.0f / viewport.getWidth(), 2.0f / viewport.getHeight()) *
-            Matrix2x3::Translation(float32(viewport.left), float32(viewport.top));
+	if (!transformUpToDate)
+	{
+		Matrix2x3 ndcToScreenSpaceTransform =
+			Matrix2x3::VerticalReflection() *
+			Matrix2x3::Translation(-1.0f, -1.0f) *
+			Matrix2x3::Scale(2.0f / viewport.getWidth(), 2.0f / viewport.getHeight()) *
+			Matrix2x3::Translation(float32(viewport.left), float32(viewport.top));
 
 		TransformConstants transformConstants;
 		transformConstants.set(ndcToScreenSpaceTransform * transform);
-        d3dContext->UpdateSubresource(d3dTransformConstantBuffer,
+		d3dContext->UpdateSubresource(d3dTransformConstantBuffer,
 			0, nullptr, &transformConstants, 0, 0);
 
-        transformUpToDate = true;
-    }
+		transformUpToDate = true;
+	}
 
-    d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY(primitiveType));
+	d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY(primitiveType));
 	d3dContext->RSSetState(d3dDefaultRasterizerState);
-    d3dContext->OMSetBlendState(d3dDefaultBlendState, nullptr, 0xFFFFFFFF);
+	d3dContext->OMSetBlendState(d3dDefaultBlendState, nullptr, 0xFFFFFFFF);
 
-    d3dContext->RSSetViewports(1, &D3D11ViewPort(float32(viewport.left), float32(viewport.top),
-        float32(viewport.right - viewport.left), float32(viewport.bottom - viewport.top)));
+	d3dContext->RSSetViewports(1, &D3D11ViewPort(float32(viewport.left), float32(viewport.top),
+		float32(viewport.right - viewport.left), float32(viewport.bottom - viewport.top)));
 
-    {
-        ID3D11Buffer *d3dBuffer = vertexBuffer.d3dBuffer;
-        UINT stride = vertexStride;
-        UINT offset = baseOffset;
-        d3dContext->IASetVertexBuffers(0, 1, &d3dBuffer, &stride, &offset);
-    }
+	{
+		ID3D11Buffer *d3dBuffer = vertexBuffer.d3dBuffer;
+		UINT stride = vertexStride;
+		UINT offset = baseOffset;
+		d3dContext->IASetVertexBuffers(0, 1, &d3dBuffer, &stride, &offset);
+	}
 
 	d3dContext->Draw(vertexCount, 0);
 }
@@ -326,19 +356,19 @@ bool Buffer::initialize(ID3D11Device* d3dDevice, uint32 size, const void* initia
 // Texture ==================================================================================//
 
 bool Texture::initialize(ID3D11Device* d3dDevice, uint32 width, uint32 height,
-    const void* initialData, uint32 initialDataStride, bool enableRenderTarget)
+	const void* initialData, uint32 initialDataStride, bool enableRenderTarget)
 {
-    UINT bindFlags = D3D11_BIND_SHADER_RESOURCE;
-    if (enableRenderTarget)
-        bindFlags |= D3D11_BIND_RENDER_TARGET;
+	UINT bindFlags = D3D11_BIND_SHADER_RESOURCE;
+	if (enableRenderTarget)
+		bindFlags |= D3D11_BIND_RENDER_TARGET;
 
-    d3dDevice->CreateTexture2D(
-        &D3D11Texture2DDesc(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, bindFlags),
-        initialData ? &D3D11SubresourceData(initialData, initialDataStride, 0) : nullptr,
-        d3dTexture.initRef());
-    d3dDevice->CreateShaderResourceView(d3dTexture, nullptr, d3dSRV.initRef());
+	d3dDevice->CreateTexture2D(
+		&D3D11Texture2DDesc(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0, bindFlags),
+		initialData ? &D3D11SubresourceData(initialData, initialDataStride, 0) : nullptr,
+		d3dTexture.initRef());
+	d3dDevice->CreateShaderResourceView(d3dTexture, nullptr, d3dSRV.initRef());
 
-    return true;
+	return true;
 }
 
 // RenderTarget =============================================================================//
@@ -353,12 +383,12 @@ bool RenderTarget::initialize(ID3D11Device* d3dDevice, ID3D11Texture2D* d3dTextu
 // TextureRenderTarget ======================================================================//
 
 bool TextureRenderTarget::initialize(ID3D11Device* d3dDevice, uint32 width, uint32 height,
-    const void* initialData, uint32 initialDataStride)
+	const void* initialData, uint32 initialDataStride)
 {
-    Texture::initialize(d3dDevice, width, height, initialData, initialDataStride, true);
-    RenderTarget::initialize(d3dDevice, Texture::getD3D11Texture2D());
+	Texture::initialize(d3dDevice, width, height, initialData, initialDataStride, true);
+	RenderTarget::initialize(d3dDevice, Texture::getD3D11Texture2D());
 
-    return true;
+	return true;
 }
 
 // WindowRenderTarget =======================================================================//

@@ -35,7 +35,7 @@ std::map<Instrument, const char*> kInstrumentNames = {
 void Panter::MainWindow::InitGui() {
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	ImGui_ImplDX11_Init(getHandle(), device.getD11Device(), device.getD11DeviceContext());
+	ImGui_ImplDX11_Init(getHandle(), device.getD3Device(), device.getD3DeviceContext());
 	ImGui::StyleColorsDark();
 
 	ImGuiStyle* style = &ImGui::GetStyle();

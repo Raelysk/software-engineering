@@ -350,6 +350,14 @@ void CanvasManager::uploadLayerRegion(uint16 dstLayerIndex, const rectu32& dstRe
 	device->uploadTexture(layerTextures[dstLayerIndex], dstRegion, srcData, srcDataStride);
 }
 
+void CanvasManager::downloadLayerRegion(uint16 srcLayerIndex, const rectu32& srcRegion,
+	void* dstData, uint32 dstDataStride)
+{
+	Debug::CrashCondition(srcLayerIndex >= layerCount, DbgMsgFmt("invalid layer index"));
+
+	device->downloadTexture(layerTextures[srcLayerIndex], srcRegion, dstData, dstDataStride);
+}
+
 void CanvasManager::clearLayer(uint16 layerIndex, Color color)
 {
 	device->clear(layerTextures[layerIndex], color);

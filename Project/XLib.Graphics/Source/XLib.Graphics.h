@@ -239,13 +239,6 @@ namespace XLib::Graphics
 	public:
 		bool initialize();
 
-        ID3D11Device* getD11Device() {
-            return d3dDevice.get();
-        }
-        ID3D11DeviceContext* getD11DeviceContext() {
-            return d3dContext.get();
-        }
-
 		void clear(RenderTarget& renderTarget, Color color);
 		void setRenderTarget(RenderTarget& renderTarget);
 		void setViewport(const rectu32& viewport);
@@ -256,7 +249,7 @@ namespace XLib::Graphics
 
 		void uploadBuffer(Buffer& buffer, const void* srcData, uint32 baseOffset, uint32 size);
 		void uploadTexture(Texture& texture, const rectu32& region, const void* srcData, uint32 srcDataStride = 0);
-		void downloadTexture(Texture& texture, const rectu32& region, void* dstData, uint32 dstDataSize = 0);
+		void downloadTexture(Texture& texture, const rectu32& region, void* dstData, uint32 dstDataStride = 0);
 		void copyTexture(Texture& dstTexture, Texture& srcTexture, uint32x2 dstLocation, const rectu32& srcRegion);
 
 		void draw2D(PrimitiveType primitiveType, Effect effect, Buffer& vertexBuffer,
@@ -288,5 +281,8 @@ namespace XLib::Graphics
 		}
 
 		static constexpr uint32 GetCustomEffectConstantsSizeLimit() { return customEffectConstantsSizeLimit; }
+
+		inline ID3D11Device* getD3Device() { return d3dDevice.get(); }
+		inline ID3D11DeviceContext* getD3DeviceContext() { return d3dContext.get(); }
 	};
 }
