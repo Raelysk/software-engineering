@@ -92,7 +92,7 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 				*currentColorChangeTarget = currentColor;
 			break;
 
-		case VirtualKey('O'):
+		/*case VirtualKey('O'):
 		{
 			wchar filename[260];
 			if (!OpenImageFileDialog(getHandle(), filename, countof(filename)))
@@ -110,7 +110,7 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 			canvasManager.uploadLayerRegion(0, dstRegion, imageData, width * 4);
 
 			break;
-		}
+		}*/
 
 		case VirtualKey('Q'):
 			canvasManager.resetSelection();
