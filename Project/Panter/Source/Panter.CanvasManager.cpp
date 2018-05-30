@@ -1,4 +1,5 @@
 #include <XLib.Debug.h>
+#include <XLib.Memory.h>
 #include <XLib.Vectors.Arithmetics.h>
 
 #include "Panter.CanvasManager.h"
@@ -356,6 +357,75 @@ void CanvasManager::downloadLayerRegion(uint16 srcLayerIndex, const rectu32& src
 	Debug::CrashCondition(srcLayerIndex >= layerCount, DbgMsgFmt("invalid layer index"));
 
 	device->downloadTexture(layerTextures[srcLayerIndex], srcRegion, dstData, dstDataStride);
+}
+
+void CanvasManager::downloadMergedLayers(void* dstData, uint32 dstDataStride)
+{
+	if (!dstDataStride)
+		dstDataStride = canvasSize.x * 4;
+
+	resetInstrument();
+
+	uint16 visibleLayerCount = 0;
+	uint16 lastVisibleLayerIndex = 0;
+	for (uint16 i = 0; i < layerCount; i++)
+	{
+		if (layerRenderingFlags[i])
+		{
+			visibleLayerCount++;
+			lastVisibleLayerIndex = i;
+		}
+	}
+
+	if (visibleLayerCount == 0)
+	{
+		for (uint32 i = 0; i < canvasSize.y; i++)
+			Memory::Set(to<byte*>(dstData) + dstDataStride * i, 0, dstDataStride);
+		return;
+	}
+
+	if (visibleLayerCount == 1)
+	{
+		device->downloadTexture(layerTextures[lastVisibleLayerIndex],
+			rectu32(0, 0, canvasSize), dstData, dstDataStride);
+		return;
+	}
+
+	// Merging visible layers in temp texture.
+
+	{
+		float32x2 canvasSizeF(canvasSize);
+
+		VertexTexturedUnorm2D vertices[6];
+		vertices[0] = { { 0.0f,          0.0f          }, { 0,      0      } };
+		vertices[1] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
+		vertices[2] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
+		vertices[3] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
+		vertices[4] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
+		vertices[5] = { { canvasSizeF.x, canvasSizeF.y }, { 0xFFFF, 0xFFFF } };
+
+		device->uploadBuffer(quadVertexBuffer, vertices, 0, sizeof(vertices));
+	}
+
+	device->setRenderTarget(tempTexture);
+	device->setViewport(rectu32(0, 0, canvasSize));
+	device->setScissorRect(rectu32(0, 0, canvasSize));
+	device->setTransform2D(Matrix2x3::Identity());
+
+	device->clear(tempTexture, 0xFFFFFF00_rgba);
+
+	for (uint16 i = 0; i < layerCount; i++)
+	{
+		if (!layerRenderingFlags[i])
+			continue;
+
+		device->setTexture(layerTextures[i]);
+		device->draw2D(PrimitiveType::TriangleList, Effect::TexturedUnorm,
+			quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
+	}
+
+	device->downloadTexture(tempTexture,
+		rectu32(0, 0, canvasSize), dstData, dstDataStride);
 }
 
 void CanvasManager::clearLayer(uint16 layerIndex, Color color)

@@ -198,6 +198,7 @@ namespace Panter
 			const void* srcData, uint32 srcDataStride = 0);
 		void downloadLayerRegion(uint16 srcLayerIndex, const rectu32& srcRegion,
 			void* dstData, uint32 dstDataStride = 0);
+		void downloadMergedLayers(void* dstData, uint32 dstDataStride = 0);
 		void clearLayer(uint16 layerIndex, XLib::Color color);
 
 		void centerView();
