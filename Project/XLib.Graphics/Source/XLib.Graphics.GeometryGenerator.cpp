@@ -56,7 +56,7 @@ void GeometryGenerator::drawLine(float32x2 start, float32x2 end, float32 width,
 		drawLeftHalfEllipseOnDiameter(end + w, end - w, color);
 }
 
-void GeometryGenerator::drawRect(const rectf32& rect, Color color)
+void GeometryGenerator::drawFilledRect(const rectf32& rect, Color color)
 {
 	VertexColor2D *vertices = allocateVertices<VertexColor2D>(6);
 
@@ -66,6 +66,82 @@ void GeometryGenerator::drawRect(const rectf32& rect, Color color)
 	vertices[3] = { { rect.left,   rect.top    }, color };
 	vertices[4] = { { rect.right,  rect.bottom }, color };
 	vertices[5] = { { rect.left,   rect.bottom }, color };
+}
+
+void GeometryGenerator::drawFilledRectWithBorder(const rectf32& rect,
+	Color fillColor, Color borderColor, float32 borderWidth)
+{
+	float32 w = borderWidth * 0.5f;
+
+	rectf32 outer = rect;
+	outer.left -= w;
+	outer.top -= w;
+	outer.right += w;
+	outer.bottom += w;
+
+	if (outer.getWidth()  > borderWidth * 2.0f &&
+		outer.getHeight() > borderWidth * 2.0f)
+	{
+		rectf32 inner = rect;
+		inner.left += w;
+		inner.top += w;
+		inner.right -= w;
+		inner.bottom -= w;
+
+		VertexColor2D *vertices = allocateVertices<VertexColor2D>(30);
+
+		// fill
+		vertices[ 0] = { { inner.left,   inner.top    }, fillColor };
+		vertices[ 1] = { { inner.right,  inner.top    }, fillColor };
+		vertices[ 2] = { { inner.right,  inner.bottom }, fillColor };
+		vertices[ 3] = { { inner.left,   inner.top    }, fillColor };
+		vertices[ 4] = { { inner.right,  inner.bottom }, fillColor };
+		vertices[ 5] = { { inner.left,   inner.bottom }, fillColor };
+
+		// border left
+		vertices[ 6] = { { outer.left,   outer.top    }, borderColor };
+		vertices[ 7] = { { inner.left,   inner.top    }, borderColor };
+		vertices[ 8] = { { inner.left,   inner.bottom }, borderColor };
+		vertices[ 9] = { { outer.left,   outer.top    }, borderColor };
+		vertices[10] = { { inner.left,   inner.bottom }, borderColor };
+		vertices[11] = { { outer.left,   outer.bottom }, borderColor };
+
+		// border top
+		vertices[12] = { { outer.left,   outer.top    }, borderColor };
+		vertices[13] = { { outer.right,  outer.top    }, borderColor };
+		vertices[14] = { { inner.right,  inner.top    }, borderColor };
+		vertices[15] = { { outer.left,   outer.top    }, borderColor };
+		vertices[16] = { { inner.right,  inner.top    }, borderColor };
+		vertices[17] = { { inner.left,   inner.top    }, borderColor };
+
+		// border right
+		vertices[18] = { { inner.right,  inner.top    }, borderColor };
+		vertices[19] = { { outer.right,  outer.top    }, borderColor };
+		vertices[20] = { { outer.right,  outer.bottom }, borderColor };
+		vertices[21] = { { inner.right,  inner.top    }, borderColor };
+		vertices[22] = { { outer.right,  outer.bottom }, borderColor };
+		vertices[23] = { { inner.right,  inner.bottom }, borderColor };
+
+		// border bottom
+		vertices[24] = { { inner.left,   inner.bottom }, borderColor };
+		vertices[25] = { { inner.right,  inner.bottom }, borderColor };
+		vertices[26] = { { outer.right,  outer.bottom }, borderColor };
+		vertices[27] = { { inner.left,   inner.bottom }, borderColor };
+		vertices[28] = { { outer.right,  outer.bottom }, borderColor };
+		vertices[29] = { { outer.left,   outer.bottom }, borderColor };
+	}
+	else
+	{
+		VertexColor2D *vertices = allocateVertices<VertexColor2D>(6);
+
+		// fill with borders
+		vertices[0] = { { outer.left,   outer.top    }, borderColor };
+		vertices[1] = { { outer.right,  outer.top    }, borderColor };
+		vertices[2] = { { outer.right,  outer.bottom }, borderColor };
+		vertices[3] = { { outer.left,   outer.top    }, borderColor };
+		vertices[4] = { { outer.right,  outer.bottom }, borderColor };
+		vertices[5] = { { outer.left,   outer.bottom }, borderColor };
+	}
 }
 
 void GeometryGenerator::drawRectShadow(const rectf32& rect, float32 width, Color color)

@@ -37,7 +37,8 @@ namespace XLib::Graphics
 
 		void drawLine(float32x2 start, float32x2 end, float32 width, Color color,
 			bool roundedStart = false, bool roundedEnd = false);
-		void drawRect(const rectf32& rect, Color color);
+		void drawFilledRect(const rectf32& rect, Color color);
+		void drawFilledRectWithBorder(const rectf32& rect, Color fillColor, Color borderColor, float32 borderWidth);
 		void drawRectShadow(const rectf32& rect, float32 width, Color color);
 		void drawVerticalGradientRect(const rectf32& rect, Color topColor, Color bottomColor);
 		void drawLeftHalfEllipseOnDiameter(float32x2 diameterStart, float32x2 diameterEnd, Color color, uint32 segmentCount = 16);

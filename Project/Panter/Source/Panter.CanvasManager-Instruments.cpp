@@ -112,6 +112,12 @@ void CanvasManager::updateInstrument_line()
 	InstrumentState_Line &state = instrumentState.line;
 	LineSettings &settings = instrumentSettings.line;
 
+	auto checkIfIsDrawable = [&]() -> bool
+	{
+		float32x2 l = state.endPosition - state.startPosition;
+		return l.x >= 1.0f || l.x <= -1.0f || l.y >= 1.0f || l.y <= -1.0f;
+	};
+
 	auto render = [&]()
 	{
 		device->clear(tempTexture, 0xFFFFFF00_rgba);
@@ -123,38 +129,6 @@ void CanvasManager::updateInstrument_line()
 		geometryGenerator.drawLine(state.startPosition, state.endPosition, settings.width,
 			settings.color, settings.roundedStart, settings.roundedEnd);
 		geometryGenerator.flush();
-	};
-
-	auto apply = [&]()
-	{
-		{
-			float32x2 canvasSizeF(canvasSize);
-
-			VertexTexturedUnorm2D vertices[6];
-			vertices[0] = { { 0.0f,          0.0f          }, { 0,      0      } };
-			vertices[1] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
-			vertices[2] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
-			vertices[3] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
-			vertices[4] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
-			vertices[5] = { { canvasSizeF.x, canvasSizeF.y }, { 0xFFFF, 0xFFFF } };
-
-			device->uploadBuffer(quadVertexBuffer, vertices, 0, sizeof(vertices));
-		}
-
-		device->setRenderTarget(layerTextures[currentLayer]);
-		device->setViewport(rectu32(0, 0, canvasSize));
-		device->setScissorRect(selection);
-		device->setTransform2D(Matrix2x3::Identity());
-		device->setTexture(tempTexture);
-
-		device->draw2D(PrimitiveType::TriangleList, Effect::TexturedUnorm,
-			quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);		
-	};
-
-	auto checkIfIsDrawable = [&]() -> bool
-	{
-		float32x2 l = state.endPosition - state.startPosition;
-		return l.x >= 1.0f || l.x <= -1.0f || l.y >= 1.0f || l.y <= -1.0f;
 	};
 
 	if (state.apply)
@@ -169,7 +143,7 @@ void CanvasManager::updateInstrument_line()
 				render();
 			}
 
-			apply();
+			mergeCurrentLayerWithTemp();
 
 			enableTempLayerRendering = false;
 		}
@@ -209,7 +183,7 @@ void CanvasManager::updateInstrument_line()
 				else
 				{
 					// Starting new line.
-					apply();
+					mergeCurrentLayerWithTemp();
 
 					state.startPosition = pointerPositionF * viewToCanvasTransform;
 					state.endPosition = state.startPosition;
@@ -279,6 +253,150 @@ void CanvasManager::updateInstrument_line()
 	}
 }
 
+void CanvasManager::updateInstrument_shape()
+{
+	using UserState = InstrumentState_Shape::UserState;
+
+	InstrumentState_Shape &state = instrumentState.shape;
+	ShapeSettings &settings = instrumentSettings.shape;
+
+	auto checkIfIsDrawable = [&]() -> bool
+	{
+		float32x2 l = state.endPosition - state.startPosition;
+		return l.x >= 1.0f || l.x <= -1.0f || l.y >= 1.0f || l.y <= -1.0f;
+	};
+
+	auto render = [&]()
+	{
+		device->clear(tempTexture, 0xFFFFFF00_rgba);
+		device->setRenderTarget(tempTexture);
+		device->setViewport(rectu32(0, 0, canvasSize));
+		device->setScissorRect(selection);
+		device->setTransform2D(Matrix2x3::Identity());
+
+		rectf32 rect;
+		if (state.startPosition.x < state.endPosition.x)
+		{
+			rect.left = state.startPosition.x;
+			rect.right = state.endPosition.x;
+		}
+		else
+		{
+			rect.left = state.endPosition.x;
+			rect.right = state.startPosition.x;
+		}
+
+		if (state.startPosition.y < state.endPosition.y)
+		{
+			rect.top = state.startPosition.y;
+			rect.bottom = state.endPosition.y;
+		}
+		else
+		{
+			rect.top = state.endPosition.y;
+			rect.bottom = state.startPosition.y;
+		}
+
+		geometryGenerator.drawFilledRectWithBorder(rect,
+			settings.fillColor, settings.borderColor, settings.borderWidth);
+		geometryGenerator.flush();
+	};
+
+	if (pointerIsActive)
+	{
+		if (state.userState == UserState::Standby)
+		{
+			if (state.notEmpty)
+			{
+				// Check if we are moving previous line anchors or starting new line.
+
+				/*float32x2 viewSpaceStartPosition = state.startPosition * canvasToViewTransform;
+				float32x2 viewSpaceEndPosition = state.endPosition * canvasToViewTransform;
+				float32x2 pointerPositionF = float32x2(pointerPosition);
+
+				float32 startDistance = VectorMath::Length(viewSpaceStartPosition - pointerPositionF);
+				float32 endDistance = VectorMath::Length(viewSpaceEndPosition - pointerPositionF);
+
+				bool potentialAnchorIndex = startDistance > endDistance;
+				float32 minDistance = potentialAnchorIndex ? endDistance : startDistance;
+
+				if (minDistance <= ViewSpaceAnchorGrabDistance)
+				{
+					// Grabbing anchor.
+					float32x2 canvasSpacePointerPosition = pointerPositionF * viewToCanvasTransform;
+					state.pointerFromAnchorOffset = canvasSpacePointerPosition -
+						(potentialAnchorIndex ? state.endPosition : state.startPosition);
+					state.prevModifyPointerPosition = pointerPosition;
+					state.anchorIndex = potentialAnchorIndex;
+					state.userState = UserState::Modify;
+				}
+				else*/
+				{
+					// Starting new shape.
+					mergeCurrentLayerWithTemp();
+
+					state.startPosition = float32x2(pointerPosition) * viewToCanvasTransform;
+					state.endPosition = state.startPosition;
+					state.userState = UserState::Draw;
+					state.notEmpty = false;
+
+					enableTempLayerRendering = false;
+				}
+			}
+			else
+			{
+				state.startPosition = float32x2(pointerPosition) * viewToCanvasTransform;
+				state.endPosition = state.startPosition;
+				state.userState = UserState::Draw;
+				state.notEmpty = false;
+				state.outOfDate = false;
+			}
+		}
+		else if (state.userState == UserState::Draw)
+		{
+			float32x2 canvasSpacePointerPosition = float32x2(pointerPosition) * viewToCanvasTransform;
+			if (state.endPosition != canvasSpacePointerPosition)
+			{
+				state.endPosition = canvasSpacePointerPosition;
+
+				state.notEmpty = checkIfIsDrawable();
+				if (state.notEmpty)
+				{
+					state.outOfDate = false;
+					render();
+				}
+
+				enableTempLayerRendering = state.notEmpty;
+			}
+		}
+		/*else if (state.userState == UserState::Modify)
+		{
+			if (state.prevModifyPointerPosition != pointerPosition)
+			{
+				state.prevModifyPointerPosition = pointerPosition;
+
+				float32x2 canvasSpacePointerPosition = float32x2(pointerPosition) * viewToCanvasTransform;
+				float32x2 newAnchorPosition = canvasSpacePointerPosition - state.pointerFromAnchorOffset;
+				if (state.anchorIndex)
+					state.endPosition = newAnchorPosition;
+				else
+					state.startPosition = newAnchorPosition;
+
+				state.notEmpty = checkIfIsDrawable();
+				if (state.notEmpty)
+				{
+					state.outOfDate = false;
+					render();
+				}
+
+				enableTempLayerRendering = state.notEmpty;
+			}
+		}*/
+	}
+	else
+		state.userState = UserState::Standby;
+}
+
 void CanvasManager::updateInstrument_brightnessContrastGammaFilter()
 {
 	InstrumentState_BrightnessContrastGammaFilter &state = instrumentState.brightnessContrastGammaFilter;
@@ -320,6 +438,32 @@ void CanvasManager::updateInstrument_brightnessContrastGammaFilter()
 
 		resetInstrument();
 	}
+}
+
+void CanvasManager::mergeCurrentLayerWithTemp()
+{
+	{
+		float32x2 canvasSizeF(canvasSize);
+
+		VertexTexturedUnorm2D vertices[6];
+		vertices[0] = { { 0.0f,          0.0f          }, { 0,      0      } };
+		vertices[1] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
+		vertices[2] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
+		vertices[3] = { { 0.0f,          canvasSizeF.y }, { 0,      0xFFFF } };
+		vertices[4] = { { canvasSizeF.x, 0.0f          }, { 0xFFFF, 0      } };
+		vertices[5] = { { canvasSizeF.x, canvasSizeF.y }, { 0xFFFF, 0xFFFF } };
+
+		device->uploadBuffer(quadVertexBuffer, vertices, 0, sizeof(vertices));
+	}
+
+	device->setRenderTarget(layerTextures[currentLayer]);
+	device->setViewport(rectu32(0, 0, canvasSize));
+	device->setScissorRect(selection);
+	device->setTransform2D(Matrix2x3::Identity());
+	device->setTexture(tempTexture);
+
+	device->draw2D(PrimitiveType::TriangleList, Effect::TexturedUnorm,
+		quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
 }
 
 void CanvasManager::resetInstrument()
@@ -379,6 +523,25 @@ LineSettings& CanvasManager::setInstrument_line(XLib::Color color, float32 width
 	currentInstrument = Instrument::Line;
 
 	return instrumentSettings.line;
+}
+
+ShapeSettings& CanvasManager::setInstrument_shape(XLib::Color fillColor,
+	XLib::Color borderColor, float32 borderWidth, Shape shape)
+{
+	disableCurrentLayerRendering = false;
+	enableTempLayerRendering = false;
+
+	instrumentSettings.shape.fillColor = fillColor;
+	instrumentSettings.shape.borderColor = borderColor;
+	instrumentSettings.shape.borderWidth = borderWidth;
+	instrumentSettings.shape.shape = shape;
+	instrumentState.shape.userState = InstrumentState_Shape::UserState::Standby;
+	instrumentState.shape.notEmpty = false;
+	instrumentState.shape.outOfDate = false;
+	instrumentState.shape.apply = false;
+	currentInstrument = Instrument::Shape;
+
+	return instrumentSettings.shape;
 }
 
 BrightnessContrastGammaFilterSettings& CanvasManager::setInstrument_brightnessContrastGammaFilter(

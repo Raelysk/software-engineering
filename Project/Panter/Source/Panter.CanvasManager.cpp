@@ -141,6 +141,10 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 				updateInstrument_line();
 				break;
 
+			case Instrument::Shape:
+				updateInstrument_shape();
+				break;
+
 			case Instrument::BrightnessContrastGammaFilter:
 				updateInstrument_brightnessContrastGammaFilter();
 				break;
@@ -248,28 +252,28 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 
 		if (selection.left > 0)
 		{
-			geometryGenerator.drawRect(
+			geometryGenerator.drawFilledRect(
 				rectf32(0.0f, 0.0f, selectionF.left, canvasSizeF.y),
 				SelectionShadowColor);
 		}
 
 		if (selection.right < canvasSize.x)
 		{
-			geometryGenerator.drawRect(
+			geometryGenerator.drawFilledRect(
 				rectf32(selectionF.right, 0.0f, canvasSizeF.x, canvasSizeF.y),
 				SelectionShadowColor);
 		}
 
 		if (selection.top > 0)
 		{
-			geometryGenerator.drawRect(
+			geometryGenerator.drawFilledRect(
 				rectf32(selectionF.left, 0.0f, selectionF.right, selectionF.top),
 				SelectionShadowColor);
 		}
 
 		if (selection.bottom < canvasSize.y)
 		{
-			geometryGenerator.drawRect(
+			geometryGenerator.drawFilledRect(
 				rectf32(selectionF.left, selectionF.bottom, selectionF.right, canvasSizeF.y),
 				SelectionShadowColor);
 		}

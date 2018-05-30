@@ -12,6 +12,28 @@
 
 namespace Panter
 {
+	enum class Instrument : uint8
+	{
+		None = 0,
+
+		Selection,
+		Pencil,
+		Brush,
+		Line,
+		Shape,
+
+		BrightnessContrastGammaFilter,
+		GaussianFilter,
+	};
+
+	enum class Shape : uint8
+	{
+		None = 0,
+
+		Rectangle,
+		Circle,
+	};
+
 	struct PencilSettings
 	{
 		XLib::Color color;
@@ -31,6 +53,14 @@ namespace Panter
 		bool roundedEnd;
 	};
 
+	struct ShapeSettings
+	{
+		XLib::Color fillColor;
+		XLib::Color borderColor;
+		float32 borderWidth;
+		Shape shape;
+	};
+
 	struct BrightnessContrastGammaFilterSettings
 	{
 		float32 brightness;
@@ -42,18 +72,6 @@ namespace Panter
 	{
 
 	};
-
-    enum class Instrument : uint8 {
-        None = 0,
-
-        Selection,
-        Pencil,
-        Brush,
-		Line,
-
-        BrightnessContrastGammaFilter,
-        GaussianFilter,
-    };
 
 	class CanvasManager : public XLib::NonCopyable
 	{
@@ -93,6 +111,31 @@ namespace Panter
 			bool apply;
 		};
 
+		struct InstrumentState_Shape
+		{
+			enum class UserState : uint8
+			{
+				Standby = 0,
+				Draw,		// End position is modified.
+				Modify,		// Anchor position is modified.
+			};
+
+			union
+			{
+				struct
+				{
+					float32x2 startPosition;
+					float32x2 endPosition;
+				};
+
+				rectf32 rect;
+			};
+			UserState userState;
+			bool notEmpty;
+			bool outOfDate;
+			bool apply;
+		};
+
 		struct InstrumentState_BrightnessContrastGammaFilter
 		{
 			bool outOfDate;
@@ -127,6 +170,7 @@ namespace Panter
 			PencilSettings pencil;
 			BrushSettings brush;
 			LineSettings line;
+			ShapeSettings shape;
 			BrightnessContrastGammaFilterSettings brightnessContrastGamma;
 		} instrumentSettings;
 
@@ -136,6 +180,7 @@ namespace Panter
 			InstrumentState_Pencil pencil;
 			InstrumentState_Brush brush;
 			InstrumentState_Line line;
+			InstrumentState_Shape shape;
 			InstrumentState_BrightnessContrastGammaFilter brightnessContrastGammaFilter;
 		} instrumentState;
 
@@ -161,7 +206,10 @@ namespace Panter
 		void updateInstrument_pencil();
 		void updateInstrument_brush();
 		void updateInstrument_line();
+		void updateInstrument_shape();
 		void updateInstrument_brightnessContrastGammaFilter();
+
+		void mergeCurrentLayerWithTemp();
 
 	public:
 		CanvasManager() = default;
@@ -183,7 +231,8 @@ namespace Panter
 		void setInstrument_selection();
 		PencilSettings&	setInstrument_pencil(XLib::Color color = 0);
 		BrushSettings&	setInstrument_brush(XLib::Color color = 0, float32 width = 1.0f);
-		LineSettings&	setInstrument_line(XLib::Color = 0, float32 width = 1.0f, bool roundedStart = false, bool roundedEnd = false);
+		LineSettings&	setInstrument_line(XLib::Color color = 0, float32 width = 1.0f, bool roundedStart = false, bool roundedEnd = false);
+		ShapeSettings&	setInstrument_shape(XLib::Color fillColor = 0, XLib::Color borderColor = 0, float32 borderWidth = 1.0f, Shape shape = Shape::Rectangle);
 		BrightnessContrastGammaFilterSettings&	setInstrument_brightnessContrastGammaFilter(float32 brightness = 0.0f, float32 contrast = 1.0f, float32 gamma = 1.0f);
 		GaussianBlurFilterSettings&				setInstrument_gaussianBlurFilter();
 		void updateInstrumentSettings();
