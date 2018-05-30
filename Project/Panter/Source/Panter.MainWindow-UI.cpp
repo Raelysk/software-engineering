@@ -94,14 +94,15 @@ void Panter::MainWindow::ProcessGui() {
 						saveCurrentFile();
 					}
 				}
-				if (ImGui::MenuItem("Save As..")) {
+				if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) {
 					saveFileWithDialog();
 				}
-				ImGui::Separator();
+
+				/*ImGui::Separator();
 				if (ImGui::BeginMenu("Options")) {
 
 					ImGui::EndMenu();
-				}
+				}*/
 				ImGui::EndMenu();
 			}
 
@@ -131,15 +132,11 @@ void Panter::MainWindow::ProcessGui() {
 				}
 				ImGui::EndMenu();
 			}
-
-			if (ImGui::BeginMenu("Layers")) {
-				ImGui::EndMenu();
+			
+			if (ImGui::MenuItem("Help")) {
+				//Show help
 			}
-
-			if (ImGui::BeginMenu("Help")) {
-				ImGui::EndMenu();
-			}
-
+			
 			{
 				float32x2 pointerPosition = canvasManager.getCanvasSpacePointerPosition();
 				ImGui::SetCursorPosX(width - 200.0f);
@@ -164,20 +161,28 @@ void Panter::MainWindow::ProcessGui() {
 		if (ImGui::Button("Pencil", ImVec2(buttonSize, buttonSize)) && currentInstrument != Instrument::Pencil) {
 			canvasManager.setInstrument_pencil(toRGB(mainColor));
 		}
-		if (ImGui::Button("Brush", ImVec2(buttonSize, buttonSize)) && currentInstrument != Instrument::Brush) {
-			canvasManager.setInstrument_brush(toRGBA(mainColor));
+		if (ImGui::Button("Brush", ImVec2(buttonSize, buttonSize))) {
+			if (currentInstrument != Instrument::Brush || !canvasManager.getInstrumentSettings_brush().blendEnabled) {
+				canvasManager.setInstrument_brush(toRGBA(mainColor));
+			}
 		}
 		if (ImGui::Button("Eraser", ImVec2(buttonSize, buttonSize))) {
-
+			if (currentInstrument != Instrument::Brush || canvasManager.getInstrumentSettings_brush().blendEnabled) {
+				canvasManager.setInstrument_brush(toRGBA(secondaryColor), 5.0f, false);
+			}
 		}
 		if (ImGui::Button("Line", ImVec2(buttonSize, buttonSize))) {
 			canvasManager.setInstrument_line(toRGBA(mainColor));
 		}
 		if (ImGui::Button("Rectangle", ImVec2(buttonSize, buttonSize))) {
-
+			if (currentInstrument != Instrument::Shape || canvasManager.getInstrumentSettings_shape().shape != Shape::Rectangle) {
+				canvasManager.setInstrument_shape(toRGBA(secondaryColor), toRGBA(mainColor), 1.0f, Shape::Rectangle);
+			}
 		}
 		if (ImGui::Button("Ellipse", ImVec2(buttonSize, buttonSize))) {
-
+			if (currentInstrument != Instrument::Shape || canvasManager.getInstrumentSettings_shape().shape != Shape::Circle) {
+				canvasManager.setInstrument_shape(toRGBA(secondaryColor), toRGBA(mainColor), 1.0f, Shape::Circle);
+			}
 		}
 
 		ImGui::End();
@@ -195,6 +200,8 @@ void Panter::MainWindow::ProcessGui() {
 		ImGui::SetNextWindowPos(ImVec2(windowXOffset - widgetsXOffset, widgetsYOffset), ImGuiCond_Always);
 		ImGui::SetNextWindowSize(ImVec2(windowXSize, -1), ImGuiCond_Always);
 		ImGui::Begin("Instrument properties", &showInstrumentProperties, windowFlags);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 1.0f);
 
 		ImGui::BeginGroup();
 		if (ImGui::ColorButton("Main color", mainColor, ImGuiColorEditFlags_AlphaPreviewHalf, ImVec2(colorButtonSize, colorButtonSize))) {
@@ -238,25 +245,30 @@ void Panter::MainWindow::ProcessGui() {
 		}
 		ImGui::EndGroup();
 
+		ImGui::PopStyleVar();
+
 		if (currentInstrument != Instrument::None) {
 			ImGui::Separator();
 
-			if (kInstrumentNames.count(currentInstrument) != 0) {
-				ImGui::Text(kInstrumentNames[currentInstrument]);
-			} else {
-				ImGui::Text("Unknown");
-			}
-
 			if (currentInstrument == Instrument::Selection) {
-				if (ImGui::Button("Crop", ImVec2(buttonSize, buttonSize))) {
+				ImGui::Text(kInstrumentNames[Instrument::Selection]);
+
+				if (ImGui::Button("Crop", ImVec2(buttonSize, buttonSize * 0.5f))) {
 					canvasManager.resizeSavingContents(canvasManager.getSelection());
 				}
 			}
 			else if (currentInstrument == Instrument::Brush) {
 				auto& settings = canvasManager.getInstrumentSettings_brush();
+				
+				if (settings.blendEnabled) {
+					ImGui::Text(kInstrumentNames[Instrument::Brush]);
+				} else {
+					ImGui::Text("Eraser");
+				}
+
 				bool updateSettings = false;
 
-				XLib::Color color = toRGBA(mainColor);
+				XLib::Color color = settings.blendEnabled ? toRGBA(mainColor) : toRGBA(secondaryColor);
 
 				updateSettings |= ImGui::SliderFloat("Line Width", &settings.width, 1.0f, 40.0f);
 				updateSettings |= (settings.color != color);
@@ -265,6 +277,8 @@ void Panter::MainWindow::ProcessGui() {
 				if (updateSettings) canvasManager.updateInstrumentSettings();
 			}
 			else if (currentInstrument == Instrument::Pencil) {
+				ImGui::Text(kInstrumentNames[Instrument::Pencil]);
+
 				auto& settings = canvasManager.getInstrumentSettings_pencil();
 				bool updateSettings = false;
 
@@ -276,6 +290,8 @@ void Panter::MainWindow::ProcessGui() {
 				if (updateSettings) canvasManager.updateInstrumentSettings();
 			}
 			else if (currentInstrument == Instrument::Line) {
+				ImGui::Text(kInstrumentNames[Instrument::Line]);
+
 				auto& settings = canvasManager.getInstrumentSettings_line();
 				bool updateSettings = false;
 
@@ -294,8 +310,38 @@ void Panter::MainWindow::ProcessGui() {
 				if (ImGui::Button("Apply", ImVec2(buttonSize, buttonSize * 0.5f))) {
 					canvasManager.applyInstrument();
 				}
+			} 
+			else if (currentInstrument == Instrument::Shape) {
+
+				auto& settings = canvasManager.getInstrumentSettings_shape();
+				if (settings.shape == Shape::Rectangle) {
+					ImGui::Text("Rectangle");
+				} else if (settings.shape == Shape::Circle) {
+					ImGui::Text("Ellipse");
+				}
+
+				bool updateSettings = false;
+
+				XLib::Color borderColor = toRGBA(mainColor);
+				XLib::Color fillColor = toRGBA(secondaryColor);
+
+				updateSettings |= ImGui::SliderFloat("Border Width", &settings.borderWidth, 1.0f, 40.0f);
+
+				updateSettings |= (settings.borderColor != borderColor);
+				updateSettings |= (settings.fillColor != fillColor);
+
+				settings.borderColor = borderColor;
+				settings.fillColor = fillColor;
+
+				if (updateSettings) canvasManager.updateInstrumentSettings();
+
+				if (ImGui::Button("Apply", ImVec2(buttonSize, buttonSize * 0.5f))) {
+					canvasManager.applyInstrument();
+				}
 			}
 			else if (currentInstrument == Instrument::BrightnessContrastGammaFilter) {
+				ImGui::Text(kInstrumentNames[Instrument::BrightnessContrastGammaFilter]);
+
 				auto& settings = canvasManager.getInstrumentSettings_brightnessContrastGammaFilter();
 				bool updateSettings = false;
 
@@ -308,6 +354,8 @@ void Panter::MainWindow::ProcessGui() {
 				if (ImGui::Button("Apply", ImVec2(buttonSize, buttonSize * 0.5f))) {
 					canvasManager.applyInstrument();
 				}
+			} else {
+				ImGui::Text(kInstrumentNames[Instrument::None]);
 			}
 		}
 

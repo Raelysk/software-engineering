@@ -494,13 +494,14 @@ PencilSettings& CanvasManager::setInstrument_pencil(Color color)
 	return instrumentSettings.pencil;
 }
 
-BrushSettings& CanvasManager::setInstrument_brush(Color color, float32 width)
+BrushSettings& CanvasManager::setInstrument_brush(Color color, float32 width, bool blendEnabled)
 {
 	disableCurrentLayerRendering = false;
 	enableTempLayerRendering = false;
 
 	instrumentSettings.brush.color = color;
 	instrumentSettings.brush.width = width;
+	instrumentSettings.brush.blendEnabled = blendEnabled;
 	currentInstrument = Instrument::Brush;
 
 	return instrumentSettings.brush;
@@ -566,6 +567,10 @@ void CanvasManager::updateInstrumentSettings()
 	{
 		case Instrument::Line:
 			instrumentState.line.outOfDate = true;
+			break;
+
+		case Instrument::Shape:
+			instrumentState.shape.outOfDate = true;
 			break;
 
 		case Instrument::BrightnessContrastGammaFilter:
