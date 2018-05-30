@@ -628,6 +628,10 @@ void CanvasManager::applyInstrument()
 			instrumentState.line.apply = true;
 			break;
 
+		case Instrument::Shape:
+			instrumentState.shape.apply = true;
+			break;
+
 		case Instrument::BrightnessContrastGammaFilter:
 			instrumentState.brightnessContrastGammaFilter.apply = true;
 			break;
