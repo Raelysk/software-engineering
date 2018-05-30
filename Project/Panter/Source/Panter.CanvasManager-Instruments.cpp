@@ -311,8 +311,9 @@ void CanvasManager::updateInstrument_shape()
 
 			geometryGenerator.drawFilledEllipse(center, radius, settings.fillColor);
 			geometryGenerator.drawEllipseBorder(center, radius, settings.borderColor, settings.borderWidth);
-			geometryGenerator.flush();
 		}
+
+		geometryGenerator.flush();
 	};
 
 	if (pointerIsActive)
@@ -408,6 +409,12 @@ void CanvasManager::updateInstrument_shape()
 	}
 	else
 		state.userState = UserState::Standby;
+
+	if (state.outOfDate && state.notEmpty)
+	{
+		state.outOfDate = false;
+		render();
+	}
 }
 
 void CanvasManager::updateInstrument_brightnessContrastGammaFilter()
