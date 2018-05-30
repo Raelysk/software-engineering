@@ -201,47 +201,48 @@ void MainWindow::onCharacter(wchar character) {
 void Panter::MainWindow::openFile()
 {
 	wchar filename[260] = {};
-    if (OpenImageFileDialog(getHandle(), filename, countof(filename)))
+    if (!OpenImageFileDialog(getHandle(), filename, countof(filename)))
+		return;
+
+    HeapPtr<byte> imageData;
+    uint32 width = 0, height = 0;
+	ImageFormat format = ImageFormat::None;
+
+    if (!LoadImageFromFile(filename, imageData, width, height, format))
+		return;
+
+    for (int i = canvasManager.getLayerCount() - 1; i > 0; --i)
 	{
-        HeapPtr<byte> imageData;
-        uint32 width = 0, height = 0;
-		ImageFormat format = ImageFormat::None;
-
-        LoadImageFromFile(filename, imageData, width, height, format);
-
-        for (int i = canvasManager.getLayerCount() - 1; i > 0; --i)
-		{
-            canvasManager.removeLayer(uint16(i));
-            layerNames[i] = "";
-        }
-        layerNames[0] = "Layer 0";
-        lastLayerNumber = 0;
-
-        canvasManager.resizeDiscardingContents({ width, height });
-        canvasManager.uploadLayerRegion(canvasManager.getCurrentLayerId(),
-			{ 0, 0, width, height }, imageData, width * 4);
-
-        currentFileName.assign(filename);
-		currentFileImageFormat = format;
-
-        std::wstring title = L"Panter - " + currentFileName;
-        setTitle(title.c_str());
+        canvasManager.removeLayer(uint16(i));
+        layerNames[i] = "";
     }
+    layerNames[0] = "Layer 0";
+    lastLayerNumber = 0;
+
+    canvasManager.resizeDiscardingContents({ width, height });
+    canvasManager.uploadLayerRegion(canvasManager.getCurrentLayerId(),
+		{ 0, 0, width, height }, imageData, width * 4);
+
+    currentFileName.assign(filename);
+	currentFileImageFormat = format;
+
+    std::wstring title = L"Panter - " + currentFileName;
+    setTitle(title.c_str());
 }
 
 void Panter::MainWindow::saveFileWithDialog()
 {
 	wchar filename[260] = {};
 	ImageFormat format;
-	if (SaveImageFileDialog(getHandle(), filename, countof(filename), &format))
-	{
-		currentFileName.assign(filename);
-		currentFileImageFormat = format;
-		saveCurrentFile();
+	if (!SaveImageFileDialog(getHandle(), filename, countof(filename), &format))
+		return;
 
-		std::wstring title = L"Panter - " + currentFileName;
-		setTitle(title.c_str());
-	}
+	currentFileName.assign(filename);
+	currentFileImageFormat = format;
+	saveCurrentFile();
+
+	std::wstring title = L"Panter - " + currentFileName;
+	setTitle(title.c_str());
 }
 
 void Panter::MainWindow::saveCurrentFile()

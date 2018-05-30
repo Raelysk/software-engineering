@@ -28,11 +28,15 @@ bool LoadImageFromFile(const wchar* filename, XLib::HeapPtr<byte>& data,
 	COMPtr<IWICBitmapFrameDecode> wicFrameDecode;
 	COMPtr<IWICFormatConverter> wicFormatConverter;
 
-	wicFactory->CreateDecoderFromFilename(filename, nullptr,
+	HRESULT hResult = S_OK;
+
+	hResult = wicFactory->CreateDecoderFromFilename(filename, nullptr,
 		GENERIC_READ, WICDecodeMetadataCacheOnLoad, wicDecoder.initRef());
+	if (FAILED(hResult)) return false;
 
 	GUID wicImageFormat;
-	wicDecoder->GetContainerFormat(&wicImageFormat);
+	hResult = wicDecoder->GetContainerFormat(&wicImageFormat);
+	if (FAILED(hResult)) return false;
 
 	ImageFormat format = ImageFormat::None;
 	if (wicImageFormat == GUID_ContainerFormatPng)
@@ -44,13 +48,19 @@ bool LoadImageFromFile(const wchar* filename, XLib::HeapPtr<byte>& data,
 	else
 		return false;
 
-	wicDecoder->GetFrame(0, wicFrameDecode.initRef());
-	wicFactory->CreateFormatConverter(wicFormatConverter.initRef());
-	wicFormatConverter->Initialize(wicFrameDecode, GUID_WICPixelFormat32bppPRGBA,
+	hResult = wicDecoder->GetFrame(0, wicFrameDecode.initRef());
+	if (FAILED(hResult)) return false;
+
+	hResult = wicFactory->CreateFormatConverter(wicFormatConverter.initRef());
+	if (FAILED(hResult)) return false;
+
+	hResult = wicFormatConverter->Initialize(wicFrameDecode, GUID_WICPixelFormat32bppPRGBA,
 		WICBitmapDitherTypeNone, nullptr, 0.0, WICBitmapPaletteTypeMedianCut);
+	if (FAILED(hResult)) return false;
 
 	UINT width = 0, height = 0;
-	wicFormatConverter->GetSize(&width, &height);
+	hResult = wicFormatConverter->GetSize(&width, &height);
+	if (FAILED(hResult)) return false;
 
 	_width = width;
 	_height = height;
@@ -58,7 +68,8 @@ bool LoadImageFromFile(const wchar* filename, XLib::HeapPtr<byte>& data,
 
 	data.resize(width * height * 4);
 
-	wicFormatConverter->CopyPixels(nullptr, width * 4, width * height * 4, data);
+	hResult = wicFormatConverter->CopyPixels(nullptr, width * 4, width * height * 4, data);
+	if (FAILED(hResult)) return false;
 
 	return true;
 }
@@ -93,37 +104,61 @@ bool SaveImageToFile(const wchar* filename, ImageFormat format, const void* data
 	COMPtr<IWICBitmap> wicSourceBitmap;
 	COMPtr<IWICFormatConverter> wicFormatConverter;
 
-	wicFactory->CreateStream(wicStream.initRef());
-	wicStream->InitializeFromFilename(filename, GENERIC_WRITE);
+	HRESULT hResult = S_OK;
 
-	wicFactory->CreateEncoder(wicImageFormat, nullptr, wicEncoder.initRef());
-	wicEncoder->Initialize(wicStream, WICBitmapEncoderNoCache);
-	wicEncoder->CreateNewFrame(wicFrameEncode.initRef(), nullptr);
+	hResult = wicFactory->CreateStream(wicStream.initRef());
+	if (FAILED(hResult)) return false;
 
-	wicFrameEncode->Initialize(nullptr);
+	hResult = wicStream->InitializeFromFilename(filename, GENERIC_WRITE);
+	if (FAILED(hResult)) return false;
+
+	hResult = wicFactory->CreateEncoder(wicImageFormat, nullptr, wicEncoder.initRef());
+	if (FAILED(hResult)) return false;
+
+	hResult = wicEncoder->Initialize(wicStream, WICBitmapEncoderNoCache);
+	if (FAILED(hResult)) return false;
+
+	hResult = wicEncoder->CreateNewFrame(wicFrameEncode.initRef(), nullptr);
+	if (FAILED(hResult)) return false;
+
+	hResult = wicFrameEncode->Initialize(nullptr);
+	if (FAILED(hResult)) return false;
+
 	wicFrameEncode->SetSize(width, height);
 	GUID wicDstPixelFormat = GUID_WICPixelFormat32bppPRGBA;
 	wicFrameEncode->SetPixelFormat(&wicDstPixelFormat);
 
 	if (wicDstPixelFormat != GUID_WICPixelFormat32bppPRGBA)
 	{
-		wicFactory->CreateFormatConverter(wicFormatConverter.initRef());
-		wicFactory->CreateBitmapFromMemory(width, height, GUID_WICPixelFormat32bppPRGBA,
+		hResult = wicFactory->CreateFormatConverter(wicFormatConverter.initRef());
+		if (FAILED(hResult)) return false;
+
+		hResult = wicFactory->CreateBitmapFromMemory(width, height, GUID_WICPixelFormat32bppPRGBA,
 			width * 4, width * height * 4, (BYTE*) data, wicSourceBitmap.initRef());
-		wicFormatConverter->Initialize(wicSourceBitmap, wicDstPixelFormat,
+		if (FAILED(hResult)) return false;
+
+		hResult = wicFormatConverter->Initialize(wicSourceBitmap, wicDstPixelFormat,
 			WICBitmapDitherTypeNone, nullptr, 0.0, WICBitmapPaletteTypeMedianCut);
+		if (FAILED(hResult)) return false;
 
 		WICRect wicRect = { 0, 0, int(width), int(height) };
-		wicFrameEncode->WriteSource(wicFormatConverter, &wicRect);
+		hResult = wicFrameEncode->WriteSource(wicFormatConverter, &wicRect);
+		if (FAILED(hResult)) return false;
 	}
 	else
 	{
-		wicFrameEncode->WritePixels(height, width * 4, width * height * 4, (BYTE*) data);
+		hResult = wicFrameEncode->WritePixels(height, width * 4, width * height * 4, (BYTE*) data);
+		if (FAILED(hResult)) return false;
 	}
 
-	wicFrameEncode->Commit();
-	wicEncoder->Commit();
-	wicStream->Commit(STGC_DEFAULT);
+	hResult = wicFrameEncode->Commit();
+	if (FAILED(hResult)) return false;
+
+	hResult = wicEncoder->Commit();
+	if (FAILED(hResult)) return false;
+
+	hResult = wicStream->Commit(STGC_DEFAULT);
+	if (FAILED(hResult)) return false;
 
 	return true;
 }
