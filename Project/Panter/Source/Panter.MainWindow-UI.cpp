@@ -1,7 +1,6 @@
 #include <map>
 
 #include "Panter.MainWindow.h"
-#include "Panter.ImageLoader.h"
 
 #include "imgui\imgui_impl_dx11.h"
 

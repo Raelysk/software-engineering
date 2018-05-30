@@ -1,5 +1,8 @@
 #pragma once
+
 #include <string>
+
+#include "imgui\imgui.h"
 
 #include <XLib.Types.h>
 #include <XLib.System.Window.h>
@@ -7,7 +10,7 @@
 
 #include "Panter.CanvasManager.h"
 
-#include "imgui\imgui.h"
+#include "FileUtil.h"
 
 namespace Panter
 {
@@ -25,6 +28,7 @@ namespace Panter
 		CanvasManager canvasManager;
         
 		std::wstring currentFileName = L"";
+		ImageFormat currentFileImageFormat = ImageFormat::None;
 
         ImVec4 mainColor = {0.0f, 0.0f, 0.0f, 1.0f};
         ImVec4 secondaryColor = {1.0f, 1.0f, 1.0f, 1.0f};

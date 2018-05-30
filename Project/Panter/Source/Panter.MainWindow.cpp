@@ -1,7 +1,6 @@
 #include "Panter.MainWindow.h"
-#include "Panter.ImageLoader.h"
 
-#include "SystemUtil.h"
+#include "FileUtil.h"
 
 using namespace XLib;
 using namespace XLib::Graphics;
@@ -97,12 +96,12 @@ void MainWindow::onKeyboard(VirtualKey key, bool state)
 		case VirtualKey('O'):
 		{
 			wchar filename[260];
-			if (!OpenFileDialog(getHandle(), filename, countof(filename)))
+			if (!OpenImageFileDialog(getHandle(), filename, countof(filename)))
 				break;
 
 			HeapPtr<byte> imageData;
 			uint32 width = 0, height = 0;
-			ImageLoader::Load(filename, imageData, width, height);
+			LoadImageFromFile(filename, imageData, width, height);
 
 			uint32 dstWidth = min(width, canvasManager.getCanvasWidth());
 			uint32 dstHeight = min(height, canvasManager.getCanvasHeight());
@@ -202,10 +201,10 @@ void MainWindow::onCharacter(wchar character) {
 
 void Panter::MainWindow::openFile() {
     wchar filename[260];
-    if (OpenFileDialog(getHandle(), filename, countof(filename))) {
+    if (OpenImageFileDialog(getHandle(), filename, countof(filename))) {
         HeapPtr<byte> imageData;
         uint32 width = 0, height = 0;
-        ImageLoader::Load(filename, imageData, width, height);
+        LoadImageFromFile(filename, imageData, width, height);
 
         rectu32 dstRegion(0, 0, width, height);
 
@@ -229,8 +228,10 @@ void Panter::MainWindow::openFile() {
 void Panter::MainWindow::saveFileWithDialog()
 {
 	wchar filename[260];
-	if (SaveFileDialog(getHandle(), filename, countof(filename))) {
+	ImageFormat format;
+	if (SaveImageFileDialog(getHandle(), filename, countof(filename), &format)) {
 		currentFileName.assign(filename);
+		currentFileImageFormat = format;
 		saveCurrentFile();
 
 		std::wstring title = L"Panter - " + currentFileName;
