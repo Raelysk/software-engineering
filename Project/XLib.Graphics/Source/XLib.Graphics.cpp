@@ -165,9 +165,6 @@ void Device::downloadTexture(Texture& texture, const rectu32& region,
 	uint32 width = region.getWidth();
 	uint32 height = region.getHeight();
 
-	if (!dstDataStride)
-		dstDataStride = width * 4;
-
 	COMPtr<ID3D11Texture2D> d3dStagingTexture;
 	d3dDevice->CreateTexture2D(&D3D11Texture2DDesc(width, height,
 			DXGI_FORMAT_R8G8B8A8_UNORM, 1, 0, D3D11_USAGE_STAGING, D3D11_CPU_ACCESS_READ),
@@ -179,11 +176,15 @@ void Device::downloadTexture(Texture& texture, const rectu32& region,
 	D3D11_MAPPED_SUBRESOURCE d3dMappedSubresource = {};
 	d3dContext->Map(d3dStagingTexture, 0, D3D11_MAP_READ, 0, &d3dMappedSubresource);
 
+	uint32 rowLength = width * 4;
+	if (!dstDataStride)
+		dstDataStride = rowLength;
+
 	for (uint32 i = 0; i < height; i++)
 	{
 		Memory::Copy(to<byte*>(dstData) + dstDataStride * i,
 			to<byte*>(d3dMappedSubresource.pData) + d3dMappedSubresource.RowPitch * i,
-			d3dMappedSubresource.RowPitch);
+			rowLength);
 	}
 
 	d3dContext->Unmap(d3dStagingTexture, 0);
