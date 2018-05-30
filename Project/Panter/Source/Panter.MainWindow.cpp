@@ -10,7 +10,6 @@ MainWindow::MainWindow(Device& device) : device(device) {}
 
 void MainWindow::onCreate(CreationArgs& args)
 {
-	device.initialize();
 	device.createWindowRenderTarget(windowRenderTarget, getHandle(), args.width, args.height);
 
 	canvasManager.initialize(device, { 720, 1280 });
