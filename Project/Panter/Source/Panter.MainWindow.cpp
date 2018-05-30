@@ -198,26 +198,31 @@ void MainWindow::onCharacter(wchar character) {
     io.AddInputCharacter((unsigned short)character);
 }
 
-void Panter::MainWindow::openFile() {
-    wchar filename[260];
-    if (OpenImageFileDialog(getHandle(), filename, countof(filename))) {
+void Panter::MainWindow::openFile()
+{
+	wchar filename[260] = {};
+    if (OpenImageFileDialog(getHandle(), filename, countof(filename)))
+	{
         HeapPtr<byte> imageData;
         uint32 width = 0, height = 0;
-        LoadImageFromFile(filename, imageData, width, height);
+		ImageFormat format = ImageFormat::None;
 
-        rectu32 dstRegion(0, 0, width, height);
+        LoadImageFromFile(filename, imageData, width, height, format);
 
-        for (int i = canvasManager.getLayerCount() - 1; i > 0; --i) {
-            canvasManager.removeLayer((uint16)i);
+        for (int i = canvasManager.getLayerCount() - 1; i > 0; --i)
+		{
+            canvasManager.removeLayer(uint16(i));
             layerNames[i] = "";
         }
         layerNames[0] = "Layer 0";
         lastLayerNumber = 0;
 
-        canvasManager.resizeDiscardingContents({width, height});
-        canvasManager.uploadLayerRegion(canvasManager.getCurrentLayerId(), dstRegion, imageData, width * 4);
+        canvasManager.resizeDiscardingContents({ width, height });
+        canvasManager.uploadLayerRegion(canvasManager.getCurrentLayerId(),
+			{ 0, 0, width, height }, imageData, width * 4);
 
         currentFileName.assign(filename);
+		currentFileImageFormat = format;
 
         std::wstring title = L"Panter - " + currentFileName;
         setTitle(title.c_str());
@@ -226,9 +231,10 @@ void Panter::MainWindow::openFile() {
 
 void Panter::MainWindow::saveFileWithDialog()
 {
-	wchar filename[260];
+	wchar filename[260] = {};
 	ImageFormat format;
-	if (SaveImageFileDialog(getHandle(), filename, countof(filename), &format)) {
+	if (SaveImageFileDialog(getHandle(), filename, countof(filename), &format))
+	{
 		currentFileName.assign(filename);
 		currentFileImageFormat = format;
 		saveCurrentFile();
@@ -240,7 +246,12 @@ void Panter::MainWindow::saveFileWithDialog()
 
 void Panter::MainWindow::saveCurrentFile()
 {
-	//Save to currentFileName
+	uint32x2 size = canvasManager.getCanvasSize();
+	HeapPtr<byte> buffer(size.x * size.y * 4);
+
+	canvasManager.downloadMergedLayers(buffer);
+
+	SaveImageToFile(currentFileName.c_str(), currentFileImageFormat, buffer, size.x, size.y);
 }
 
 void MainWindow::updateAndRedraw()

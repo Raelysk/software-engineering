@@ -19,7 +19,8 @@ inline void checkWICInitialization()
 	}
 }
 
-bool LoadImageFromFile(const wchar* filename, XLib::HeapPtr<byte>& data, uint32& _width, uint32& _height)
+bool LoadImageFromFile(const wchar* filename, XLib::HeapPtr<byte>& data,
+	uint32& _width, uint32& _height, ImageFormat& _format)
 {
 	checkWICInitialization();
 
@@ -29,6 +30,20 @@ bool LoadImageFromFile(const wchar* filename, XLib::HeapPtr<byte>& data, uint32&
 
 	wicFactory->CreateDecoderFromFilename(filename, nullptr,
 		GENERIC_READ, WICDecodeMetadataCacheOnLoad, wicDecoder.initRef());
+
+	GUID wicImageFormat;
+	wicDecoder->GetContainerFormat(&wicImageFormat);
+
+	ImageFormat format = ImageFormat::None;
+	if (wicImageFormat == GUID_ContainerFormatPng)
+		format = ImageFormat::Png;
+	else if (wicImageFormat == GUID_ContainerFormatJpeg)
+		format = ImageFormat::Jpeg;
+	else if (wicImageFormat == GUID_ContainerFormatBmp)
+		format = ImageFormat::Bmp;
+	else
+		return false;
+
 	wicDecoder->GetFrame(0, wicFrameDecode.initRef());
 	wicFactory->CreateFormatConverter(wicFormatConverter.initRef());
 	wicFormatConverter->Initialize(wicFrameDecode, GUID_WICPixelFormat32bppPRGBA,
@@ -39,6 +54,7 @@ bool LoadImageFromFile(const wchar* filename, XLib::HeapPtr<byte>& data, uint32&
 
 	_width = width;
 	_height = height;
+	_format = format;
 
 	data.resize(width * height * 4);
 
