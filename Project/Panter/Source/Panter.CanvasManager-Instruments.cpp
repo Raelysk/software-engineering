@@ -316,6 +316,27 @@ void CanvasManager::updateInstrument_shape()
 		geometryGenerator.flush();
 	};
 
+	if (state.apply)
+	{
+		if (state.notEmpty)
+		{
+			state.notEmpty = false;
+
+			if (state.outOfDate)
+			{
+				state.outOfDate = false;
+				render();
+			}
+
+			mergeCurrentLayerWithTemp();
+
+			enableTempLayerRendering = false;
+		}
+
+		state.userState = UserState::Standby;
+		state.apply = false;
+	}
+
 	if (pointerIsActive)
 	{
 		if (state.userState == UserState::Standby)
