@@ -9,5 +9,5 @@ namespace Panter
 		SelectionShadowColor = 0x006AC480_rgba;
 
 	static constexpr float32
-		AnchorGrabDistance = 4.0f;
+		ViewSpaceAnchorGrabDistance = 8.0f;
 }

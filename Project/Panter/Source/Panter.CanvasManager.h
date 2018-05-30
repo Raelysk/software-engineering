@@ -78,14 +78,14 @@ namespace Panter
 			enum class UserState : uint8
 			{
 				Standby = 0,
-				Draw,		// Pointer active. End position is modified.
-				Modify,		// Pointer active. Anchor position is modifier.
+				Draw,		// End position is modified.
+				Modify,		// Anchor position is modified.
 			};
 
 			float32x2 startPosition;
 			float32x2 endPosition;
 			float32x2 pointerFromAnchorOffset;
-			float32x2 prevModifyPointerPosition;
+			sint16x2 prevModifyPointerPosition;
 			UserState userState;
 			bool anchorIndex;
 			bool notEmpty;

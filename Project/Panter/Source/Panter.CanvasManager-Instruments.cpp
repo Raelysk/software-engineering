@@ -184,21 +184,25 @@ void CanvasManager::updateInstrument_line()
 		{
 			if (state.notEmpty)
 			{
-				// Check if we are moving previus line anchors or starting new line.
+				// Check if we are moving previous line anchors or starting new line.
 
-				float32x2 canvasSpacePointerPosition = float32x2(pointerPosition) * viewToCanvasTransform;
-				float32 startDistance = VectorMath::Length(state.startPosition - canvasSpacePointerPosition);
-				float32 endDistance = VectorMath::Length(state.endPosition - canvasSpacePointerPosition);
+				float32x2 viewSpaceStartPosition = state.startPosition * canvasToViewTransform;
+				float32x2 viewSpaceEndPosition = state.endPosition * canvasToViewTransform;
+				float32x2 pointerPositionF = float32x2(pointerPosition);
+
+				float32 startDistance = VectorMath::Length(viewSpaceStartPosition - pointerPositionF);
+				float32 endDistance = VectorMath::Length(viewSpaceEndPosition - pointerPositionF);
 
 				bool potentialAnchorIndex = startDistance > endDistance;
 				float32 minDistance = potentialAnchorIndex ? endDistance : startDistance;
 
-				if (minDistance <= AnchorGrabDistance)
+				if (minDistance <= ViewSpaceAnchorGrabDistance)
 				{
 					// Grabbing anchor.
+					float32x2 canvasSpacePointerPosition = pointerPositionF * viewToCanvasTransform;
 					state.pointerFromAnchorOffset = canvasSpacePointerPosition -
 						(potentialAnchorIndex ? state.endPosition : state.startPosition);
-					state.prevModifyPointerPosition = canvasSpacePointerPosition;
+					state.prevModifyPointerPosition = pointerPosition;
 					state.anchorIndex = potentialAnchorIndex;
 					state.userState = UserState::Modify;
 				}
@@ -207,7 +211,7 @@ void CanvasManager::updateInstrument_line()
 					// Starting new line.
 					apply();
 
-					state.startPosition = float32x2(pointerPosition) * viewToCanvasTransform;
+					state.startPosition = pointerPositionF * viewToCanvasTransform;
 					state.endPosition = state.startPosition;
 					state.userState = UserState::Draw;
 					state.notEmpty = false;
@@ -243,11 +247,11 @@ void CanvasManager::updateInstrument_line()
 		}
 		else if (state.userState == UserState::Modify)
 		{
-			float32x2 canvasSpacePointerPosition = float32x2(pointerPosition) * viewToCanvasTransform;
-			if (state.prevModifyPointerPosition != canvasSpacePointerPosition)
+			if (state.prevModifyPointerPosition != pointerPosition)
 			{
-				state.prevModifyPointerPosition = canvasSpacePointerPosition;
+				state.prevModifyPointerPosition = pointerPosition;
 
+				float32x2 canvasSpacePointerPosition = float32x2(pointerPosition) * viewToCanvasTransform;
 				float32x2 newAnchorPosition = canvasSpacePointerPosition - state.pointerFromAnchorOffset;
 				if (state.anchorIndex)
 					state.endPosition = newAnchorPosition;
