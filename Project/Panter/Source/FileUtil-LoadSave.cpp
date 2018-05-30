@@ -24,6 +24,9 @@ bool LoadImageFromFile(const wchar* filename, XLib::HeapPtr<byte>& data,
 {
 	checkWICInitialization();
 
+	if (!wicFactory.isInitialized())
+		return false;
+
 	COMPtr<IWICBitmapDecoder> wicDecoder;
 	COMPtr<IWICBitmapFrameDecode> wicFrameDecode;
 	COMPtr<IWICFormatConverter> wicFormatConverter;
@@ -97,6 +100,9 @@ bool SaveImageToFile(const wchar* filename, ImageFormat format, const void* data
 	}
 
 	checkWICInitialization();
+
+	if (!wicFactory.isInitialized())
+		return false;
 
 	COMPtr<IWICStream> wicStream;
 	COMPtr<IWICBitmapEncoder> wicEncoder;
