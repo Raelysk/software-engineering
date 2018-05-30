@@ -361,10 +361,11 @@ void CanvasManager::downloadLayerRegion(uint16 srcLayerIndex, const rectu32& src
 
 void CanvasManager::downloadMergedLayers(void* dstData, uint32 dstDataStride)
 {
+	applyInstrument();
+	resetInstrument();
+
 	if (!dstDataStride)
 		dstDataStride = canvasSize.x * 4;
-
-	resetInstrument();
 
 	uint16 visibleLayerCount = 0;
 	uint16 lastVisibleLayerIndex = 0;
