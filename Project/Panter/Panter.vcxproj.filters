@@ -44,6 +44,8 @@
   <ItemGroup>
     <FxCompile Include="Source\Shaders\BrightnessContrastGammaPS.hlsl" />
     <FxCompile Include="Source\Shaders\CheckerboardPS.hlsl" />
+    <FxCompile Include="Source\Shaders\BlurPS.hlsl" />
+    <FxCompile Include="Source\Shaders\SharpenPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="imgui">

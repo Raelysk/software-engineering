@@ -441,10 +441,10 @@ void CanvasManager::updateInstrument_shape()
 	}
 }
 
-void CanvasManager::updateInstrument_brightnessContrastGammaFilter()
+void CanvasManager::updateInstrument_filter(XLib::Graphics::CustomEffect& filterEffect,
+	const void* settings, uint32 settingsSize)
 {
-	InstrumentState_BrightnessContrastGammaFilter &state = instrumentState.brightnessContrastGammaFilter;
-	BrightnessContrastGammaFilterSettings &settings = instrumentSettings.brightnessContrastGamma;
+	InstrumentState_Filter &state = instrumentState.filter;
 
 	if (state.outOfDate)
 	{
@@ -469,10 +469,11 @@ void CanvasManager::updateInstrument_brightnessContrastGammaFilter()
 		device->setScissorRect(selection);
 		device->setTransform2D(Matrix2x3::Identity());
 		device->setTexture(layerTextures[currentLayer]);
-		device->setCustomEffectConstants(settings);
+		if (settingsSize)
+			device->setCustomEffectConstants(settings, settingsSize);
 
 		device->clear(tempTexture, 0);
-		device->draw2D(PrimitiveType::TriangleList, brightnessContrastGammaEffect,
+		device->draw2D(PrimitiveType::TriangleList, filterEffect,
 			quadVertexBuffer, 0, sizeof(VertexTexturedUnorm2D), 6);
 	}
 
@@ -598,11 +599,34 @@ BrightnessContrastGammaFilterSettings& CanvasManager::setInstrument_brightnessCo
 	instrumentSettings.brightnessContrastGamma.brightness = brightness;
 	instrumentSettings.brightnessContrastGamma.contrast = contrast;
 	instrumentSettings.brightnessContrastGamma.gamma = gamma;
-	instrumentState.brightnessContrastGammaFilter.outOfDate = true;
-	instrumentState.brightnessContrastGammaFilter.apply = false;
+	instrumentState.filter.outOfDate = true;
+	instrumentState.filter.apply = false;
 	currentInstrument = Instrument::BrightnessContrastGammaFilter;
 
 	return instrumentSettings.brightnessContrastGamma;
+}
+
+GaussianBlurFilterSettings& CanvasManager::setInstrument_gaussianBlurFilter(uint32 radius)
+{
+	disableCurrentLayerRendering = true;
+	enableTempLayerRendering = true;
+
+	instrumentSettings.gaussianBlur.radius = radius;
+	instrumentState.filter.outOfDate = true;
+	instrumentState.filter.apply = false;
+	currentInstrument = Instrument::GaussianBlurFilter;
+
+	return instrumentSettings.gaussianBlur;
+}
+
+void CanvasManager::setInstrument_sharpenFilter()
+{
+	disableCurrentLayerRendering = true;
+	enableTempLayerRendering = true;
+
+	instrumentState.filter.outOfDate = true;
+	instrumentState.filter.apply = false;
+	currentInstrument = Instrument::SharpenFilter;
 }
 
 void CanvasManager::updateInstrumentSettings()
@@ -618,7 +642,9 @@ void CanvasManager::updateInstrumentSettings()
 			break;
 
 		case Instrument::BrightnessContrastGammaFilter:
-			instrumentState.brightnessContrastGammaFilter.outOfDate = true;
+		case Instrument::GaussianBlurFilter:
+		case Instrument::SharpenFilter:
+			instrumentState.filter.outOfDate = true;
 			break;
 	}
 }
@@ -636,7 +662,9 @@ void CanvasManager::applyInstrument()
 			break;
 
 		case Instrument::BrightnessContrastGammaFilter:
-			instrumentState.brightnessContrastGammaFilter.apply = true;
+		case Instrument::GaussianBlurFilter:
+		case Instrument::SharpenFilter:
+			instrumentState.filter.apply = true;
 			break;
 	}
 }

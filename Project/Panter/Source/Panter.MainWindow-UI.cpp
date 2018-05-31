@@ -28,7 +28,8 @@ std::map<Instrument, const char*> kInstrumentNames = {
 	{ Instrument::Brush, "Brush" },
 	{ Instrument::Line, "Line" },
 	{ Instrument::BrightnessContrastGammaFilter, "Brightness Contrast Gamma Filter" },
-	{ Instrument::GaussianFilter, "Gaussian Blur Filter" },
+	{ Instrument::GaussianBlurFilter, "Gaussian Blur Filter" },
+	{ Instrument::SharpenFilter, "Sharpen Filter" },
 };
 
 

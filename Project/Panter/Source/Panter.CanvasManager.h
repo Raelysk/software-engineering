@@ -23,7 +23,8 @@ namespace Panter
 		Shape,
 
 		BrightnessContrastGammaFilter,
-		GaussianFilter,
+		GaussianBlurFilter,
+		SharpenFilter,
 	};
 
 	enum class Shape : uint8
@@ -71,7 +72,7 @@ namespace Panter
 
 	struct GaussianBlurFilterSettings
 	{
-
+		uint32 radius;
 	};
 
 	class CanvasManager : public XLib::NonCopyable
@@ -137,7 +138,7 @@ namespace Panter
 			bool apply;
 		};
 
-		struct InstrumentState_BrightnessContrastGammaFilter
+		struct InstrumentState_Filter
 		{
 			bool outOfDate;
 			bool apply;
@@ -149,8 +150,10 @@ namespace Panter
 		XLib::Graphics::Buffer quadVertexBuffer;
 		XLib::Graphics::GeometryGenerator geometryGenerator;
 
-		XLib::Graphics::CustomEffect brightnessContrastGammaEffect;
 		XLib::Graphics::CustomEffect checkerboardEffect;
+		XLib::Graphics::CustomEffect brightnessContrastGammaEffect;
+		XLib::Graphics::CustomEffect blurEffect;
+		XLib::Graphics::CustomEffect sharpenEffect;
 
 		// canvas data
 		XLib::Graphics::TextureRenderTarget layerTextures[16];
@@ -173,6 +176,7 @@ namespace Panter
 			LineSettings line;
 			ShapeSettings shape;
 			BrightnessContrastGammaFilterSettings brightnessContrastGamma;
+			GaussianBlurFilterSettings gaussianBlur;
 		} instrumentSettings;
 
 		union
@@ -182,7 +186,7 @@ namespace Panter
 			InstrumentState_Brush brush;
 			InstrumentState_Line line;
 			InstrumentState_Shape shape;
-			InstrumentState_BrightnessContrastGammaFilter brightnessContrastGammaFilter;
+			InstrumentState_Filter filter;
 		} instrumentState;
 
 		// view state
@@ -208,7 +212,12 @@ namespace Panter
 		void updateInstrument_brush();
 		void updateInstrument_line();
 		void updateInstrument_shape();
-		void updateInstrument_brightnessContrastGammaFilter();
+		void updateInstrument_filter(XLib::Graphics::CustomEffect& filterEffect,
+			const void* settings = nullptr, uint32 settingsSize = 0);
+
+		template <typename SettingsType>
+		inline void updateInstrument_filter(XLib::Graphics::CustomEffect& filterEffect, const SettingsType& settings)
+			{ updateInstrument_filter(filterEffect, &settings, sizeof(SettingsType)); }
 
 		void mergeCurrentLayerWithTemp();
 
@@ -236,7 +245,8 @@ namespace Panter
 		ShapeSettings&	setInstrument_shape(XLib::Color fillColor = 0, XLib::Color borderColor = 0, float32 borderWidth = 1.0f, Shape shape = Shape::Rectangle);
 
 		BrightnessContrastGammaFilterSettings&	setInstrument_brightnessContrastGammaFilter(float32 brightness = 0.0f, float32 contrast = 1.0f, float32 gamma = 1.0f);
-		GaussianBlurFilterSettings&				setInstrument_gaussianBlurFilter();
+		GaussianBlurFilterSettings&				setInstrument_gaussianBlurFilter(uint32 radius = 8);
+		void									setInstrument_sharpenFilter();
 		void updateInstrumentSettings();
 		void applyInstrument();
 
@@ -267,7 +277,7 @@ namespace Panter
 		inline LineSettings&	getInstrumentSettings_line()	{ return instrumentSettings.line; }
 		inline ShapeSettings&	getInstrumentSettings_shape() { return instrumentSettings.shape; }
 		inline BrightnessContrastGammaFilterSettings&	getInstrumentSettings_brightnessContrastGammaFilter() { return instrumentSettings.brightnessContrastGamma; }
-		inline GaussianBlurFilterSettings&				getInstrumentSettings_gaussianBlurFilter();
+		inline GaussianBlurFilterSettings&				getInstrumentSettings_gaussianBlurFilter() { return instrumentSettings.gaussianBlur; }
 
 		inline uint32x2 getCanvasSize() const { return canvasSize; }
 		inline uint32 getCanvasWidth() const { return canvasSize.x; }

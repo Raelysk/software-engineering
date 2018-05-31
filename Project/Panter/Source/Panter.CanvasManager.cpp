@@ -22,10 +22,14 @@ void CanvasManager::initialize(Device& device, uint32x2 canvasSize)
 	device.createBuffer(quadVertexBuffer, sizeof(VertexTexturedUnorm2D) * 6);
 	geometryGenerator.initialize(device);
 
-	device.createCustomEffect(brightnessContrastGammaEffect, Effect::TexturedUnorm,
-		EffectShaders::BrightnessContrastGammaPS.data, EffectShaders::BrightnessContrastGammaPS.size);
 	device.createCustomEffect(checkerboardEffect, Effect::TexturedUnorm,
 		EffectShaders::CheckerboardPS.data, EffectShaders::CheckerboardPS.size);
+	device.createCustomEffect(brightnessContrastGammaEffect, Effect::TexturedUnorm,
+		EffectShaders::BrightnessContrastGammaPS.data, EffectShaders::BrightnessContrastGammaPS.size);
+	device.createCustomEffect(blurEffect, Effect::TexturedUnorm,
+		EffectShaders::BlurPS.data, EffectShaders::BlurPS.size);
+	device.createCustomEffect(sharpenEffect, Effect::TexturedUnorm,
+		EffectShaders::SharpenPS.data, EffectShaders::SharpenPS.size);
 
 	centerView();
 	selection = { 0, 0, canvasSize };
@@ -146,7 +150,27 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 				break;
 
 			case Instrument::BrightnessContrastGammaFilter:
-				updateInstrument_brightnessContrastGammaFilter();
+				updateInstrument_filter(brightnessContrastGammaEffect, instrumentSettings.brightnessContrastGamma);
+				break;
+
+			case Instrument::GaussianBlurFilter:
+			{
+				struct Settings
+				{
+					uint32 radius;
+					float32 multiplier;
+				};
+
+				Settings settings;
+				settings.radius = min<uint32>(instrumentSettings.gaussianBlur.radius, 16);
+				settings.multiplier = 1.0f / float32(sqr(settings.radius * 2 + 1));
+
+				updateInstrument_filter(blurEffect, settings);
+				break;
+			}
+
+			case Instrument::SharpenFilter:
+				updateInstrument_filter(sharpenEffect);
 				break;
 
 			default:
