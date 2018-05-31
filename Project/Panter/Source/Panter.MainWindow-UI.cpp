@@ -492,11 +492,16 @@ void Panter::MainWindow::ProcessGui() {
 		if (ImGui::InputInt("Width", &resizeWidth)) {
 			if (resizeWidth < 1) {
 				resizeWidth = 1;
+			} else if (resizeWidth > 4096) {
+				resizeWidth = 4096;
 			}
+			
 		}
 		if (ImGui::InputInt("Height", &resizeHeight)) {
 			if (resizeHeight < 1) {
 				resizeHeight = 1;
+			} else if (resizeHeight > 4096) {
+				resizeHeight = 4096;
 			}
 		}
 
@@ -528,11 +533,16 @@ void Panter::MainWindow::ProcessGui() {
 		if (ImGui::InputInt("Width", &createWidth)) {
 			if (createWidth < 1) {
 				createWidth = 1;
+			} else if (createWidth > 4096) {
+				createWidth = 4096;
 			}
+
 		}
 		if (ImGui::InputInt("Height", &createHeight)) {
 			if (createHeight < 1) {
 				createHeight = 1;
+			} else if (createHeight > 4096) {
+				createHeight = 4096;
 			}
 		}
 
