@@ -129,15 +129,18 @@ void Panter::MainWindow::ProcessGui() {
 					canvasManager.setInstrument_brightnessContrastGammaFilter();
 				}
 				if (ImGui::MenuItem("Gaussian Blur")) {
-
+					canvasManager.setInstrument_gaussianBlurFilter();
+				}
+				if (ImGui::MenuItem("Sharpen")) {
+					canvasManager.setInstrument_sharpenFilter();
 				}
 				ImGui::EndMenu();
 			}
-			
+			/*
 			if (ImGui::MenuItem("Help")) {
 				//Show help
 			}
-			
+			*/
 			{
 				float32x2 pointerPosition = canvasManager.getCanvasSpacePointerPosition();
 				ImGui::SetCursorPosX(width - 200.0f);
@@ -355,7 +358,35 @@ void Panter::MainWindow::ProcessGui() {
 				if (ImGui::Button("Apply", ImVec2(buttonSize, buttonSize * 0.5f))) {
 					canvasManager.applyInstrument();
 				}
-			} else {
+			}
+			else if (currentInstrument == Instrument::GaussianBlurFilter) {
+				ImGui::Text(kInstrumentNames[Instrument::GaussianBlurFilter]);
+
+				auto& settings = canvasManager.getInstrumentSettings_gaussianBlurFilter();
+				bool updateSettings = false;
+
+				updateSettings |= ImGui::SliderInt("Radius", (int*)&settings.radius, 1, 16);
+
+				if (updateSettings) canvasManager.updateInstrumentSettings();
+
+				if (ImGui::Button("Apply", ImVec2(buttonSize, buttonSize * 0.5f))) {
+					canvasManager.applyInstrument();
+				}
+			}
+			else if (currentInstrument == Instrument::SharpenFilter) {
+				ImGui::Text(kInstrumentNames[Instrument::SharpenFilter]);
+
+				//auto& settings = canvasManager.getInstrumentSettings_sharpenFilter();
+				//bool updateSettings = false;
+
+				
+				//if (updateSettings) canvasManager.updateInstrumentSettings();
+
+				if (ImGui::Button("Apply", ImVec2(buttonSize, buttonSize * 0.5f))) {
+					canvasManager.applyInstrument();
+				}
+			}
+			else {
 				ImGui::Text(kInstrumentNames[Instrument::None]);
 			}
 		}
@@ -372,7 +403,7 @@ void Panter::MainWindow::ProcessGui() {
 		uint16 currentLayerId = canvasManager.getCurrentLayerId();
 
 		// New / Layer up /Layer down /Delete
-		if (ImGui::Button("Add", ImVec2(buttonSize * 1.5f, buttonSize * 0.5f))) {
+		if (ImGui::Button("Add", ImVec2(buttonSize * 1.5f, buttonSize * 0.5f)) && numberOfLayers < 16) {
 			canvasManager.createLayer();
 
 			numberOfLayers = canvasManager.getLayerCount();
