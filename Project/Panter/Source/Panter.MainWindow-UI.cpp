@@ -79,15 +79,15 @@ void Panter::MainWindow::ProcessGui() {
 	{
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
-				if (ImGui::MenuItem("New", "Ctrl+N")) {
+				if (ImGui::MenuItem("New")) {
 					openCreateWindow = true;
 					createWidth = canvasManager.getCanvasWidth();
 					createHeight = canvasManager.getCanvasHeight();
 				}
-				if (ImGui::MenuItem("Open", "Ctrl+O")) {
+				if (ImGui::MenuItem("Open")) {
 					openFile();
 				}
-				if (ImGui::MenuItem("Save", "Ctrl+S")) {
+				if (ImGui::MenuItem("Save")) {
 					if (currentFileName.empty()) {
 						saveFileWithDialog();
 					}
@@ -95,7 +95,7 @@ void Panter::MainWindow::ProcessGui() {
 						saveCurrentFile();
 					}
 				}
-				if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) {
+				if (ImGui::MenuItem("Save As...")) {
 					saveFileWithDialog();
 				}
 
