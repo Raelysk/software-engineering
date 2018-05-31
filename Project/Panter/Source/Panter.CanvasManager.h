@@ -258,7 +258,7 @@ namespace Panter
 
 		uint16 createLayer(uint16 insertAtIndex = uint16(-1));
 		void removeLayer(uint16 index);
-		//void moveLayer(uint16 fromIndex, uint16 toIndex);
+		void moveLayer(uint16 fromIndex, uint16 toIndex);
 		void enableLayer(uint16 index, bool enabled);
 
 		void uploadLayerRegion(uint16 dstLayerIndex, const rectu32& dstRegion,

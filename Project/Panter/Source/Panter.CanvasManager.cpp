@@ -374,6 +374,20 @@ void CanvasManager::removeLayer(uint16 index)
 	}
 }
 
+void Panter::CanvasManager::moveLayer(uint16 fromIndex, uint16 toIndex) {
+	Debug::CrashCondition(fromIndex >= layerCount || toIndex >= layerCount, DbgMsgFmt("invalid layer index"));
+
+
+	XLib::Graphics::TextureRenderTarget tmpTexture = move(layerTextures[fromIndex]);
+	layerTextures[fromIndex] = move(layerTextures[toIndex]);
+	layerTextures[toIndex] = move(tmpTexture);
+
+	bool tmpLayerFlag = layerRenderingFlags[fromIndex];
+	layerRenderingFlags[fromIndex] = layerRenderingFlags[toIndex];
+	layerRenderingFlags[toIndex] = tmpLayerFlag;
+
+}
+
 void CanvasManager::enableLayer(uint16 index, bool enabled)
 {
 	Debug::CrashCondition(index >= layerCount, DbgMsgFmt("invalid layer index"));

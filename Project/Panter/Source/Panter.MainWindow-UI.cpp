@@ -458,25 +458,21 @@ void Panter::MainWindow::ProcessGui() {
 		ImGui::Separator();
 		if (ImGui::Button("Up", ImVec2(buttonSize * 1.5f, buttonSize * 0.5f))) {
 			if (currentLayerId != numberOfLayers - 1) {
-				/*
 				canvasManager.moveLayer(currentLayerId, currentLayerId + 1);
 				std::swap(layerNames[currentLayerId], layerNames[currentLayerId + 1]);
 				std::swap(enableLayer[currentLayerId], enableLayer[currentLayerId + 1]);
 				++currentLayerId;
 				canvasManager.setCurrentLayer(currentLayerId);
-				*/
 			}
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Down", ImVec2(buttonSize * 1.5f, buttonSize * 0.5f))) {
 			if (currentLayerId != 0) {
-				/*
 				canvasManager.moveLayer(currentLayerId, currentLayerId - 1);
 				std::swap(layerNames[currentLayerId], layerNames[currentLayerId - 1]);
 				std::swap(enableLayer[currentLayerId], enableLayer[currentLayerId - 1]);
 				--currentLayerId;
 				canvasManager.setCurrentLayer(currentLayerId);
-				*/
 			}
 		}
 
