@@ -180,12 +180,12 @@ void Panter::MainWindow::ProcessGui() {
 		}
 		if (ImGui::Button("Rectangle", ImVec2(buttonSize, buttonSize))) {
 			if (currentInstrument != Instrument::Shape || canvasManager.getInstrumentSettings_shape().shape != Shape::Rectangle) {
-				canvasManager.setInstrument_shape(toRGBA(secondaryColor), toRGBA(mainColor), 1.0f, Shape::Rectangle);
+				canvasManager.setInstrument_shape(toRGBA(secondaryColor), toRGBA(mainColor), 5.0f, Shape::Rectangle);
 			}
 		}
 		if (ImGui::Button("Ellipse", ImVec2(buttonSize, buttonSize))) {
 			if (currentInstrument != Instrument::Shape || canvasManager.getInstrumentSettings_shape().shape != Shape::Circle) {
-				canvasManager.setInstrument_shape(toRGBA(secondaryColor), toRGBA(mainColor), 1.0f, Shape::Circle);
+				canvasManager.setInstrument_shape(toRGBA(secondaryColor), toRGBA(mainColor), 5.0f, Shape::Circle);
 			}
 		}
 
@@ -376,11 +376,12 @@ void Panter::MainWindow::ProcessGui() {
 			else if (currentInstrument == Instrument::SharpenFilter) {
 				ImGui::Text(kInstrumentNames[Instrument::SharpenFilter]);
 
-				//auto& settings = canvasManager.getInstrumentSettings_sharpenFilter();
-				//bool updateSettings = false;
+				auto& settings = canvasManager.getInstrumentSettings_sharpenFilter();
+				bool updateSettings = false;
 
+				updateSettings |= ImGui::SliderFloat("Intensity", &settings.intensity, 0.0f, 1.0f);
 				
-				//if (updateSettings) canvasManager.updateInstrumentSettings();
+				if (updateSettings) canvasManager.updateInstrumentSettings();
 
 				if (ImGui::Button("Apply", ImVec2(buttonSize, buttonSize * 0.5f))) {
 					canvasManager.applyInstrument();
@@ -409,6 +410,8 @@ void Panter::MainWindow::ProcessGui() {
 			numberOfLayers = canvasManager.getLayerCount();
 			currentLayerId = numberOfLayers - 1;
 			canvasManager.setCurrentLayer(currentLayerId);
+
+			canvasManager.clearLayer(currentLayerId, 0xFFFFFF00_rgba);
 
 			layerNames[currentLayerId] = "Layer " + std::to_string(++lastLayerNumber);
 			enableLayer[currentLayerId] = true;

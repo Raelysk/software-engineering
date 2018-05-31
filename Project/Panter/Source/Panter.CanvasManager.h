@@ -246,9 +246,9 @@ namespace Panter
 		void resetInstrument();
 		void setInstrument_selection();
 		PencilSettings&	setInstrument_pencil(XLib::Color color = 0);
-		BrushSettings&	setInstrument_brush(XLib::Color color = 0, float32 width = 1.0f, bool blendEnabled = true);
-		LineSettings&	setInstrument_line(XLib::Color color = 0, float32 width = 1.0f, bool roundedStart = false, bool roundedEnd = false);
-		ShapeSettings&	setInstrument_shape(XLib::Color fillColor = 0, XLib::Color borderColor = 0, float32 borderWidth = 1.0f, Shape shape = Shape::Rectangle);
+		BrushSettings&	setInstrument_brush(XLib::Color color = 0, float32 width = 5.0f, bool blendEnabled = true);
+		LineSettings&	setInstrument_line(XLib::Color color = 0, float32 width = 5.0f, bool roundedStart = false, bool roundedEnd = false);
+		ShapeSettings&	setInstrument_shape(XLib::Color fillColor = 0, XLib::Color borderColor = 0, float32 borderWidth = 5.0f, Shape shape = Shape::Rectangle);
 
 		BrightnessContrastGammaFilterSettings&	setInstrument_brightnessContrastGammaFilter(float32 brightness = 0.0f, float32 contrast = 1.0f, float32 gamma = 1.0f);
 		GaussianBlurFilterSettings&				setInstrument_gaussianBlurFilter(uint32 radius = 8);
