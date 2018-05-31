@@ -619,14 +619,17 @@ GaussianBlurFilterSettings& CanvasManager::setInstrument_gaussianBlurFilter(uint
 	return instrumentSettings.gaussianBlur;
 }
 
-void CanvasManager::setInstrument_sharpenFilter()
+SharpenFilterSettings& CanvasManager::setInstrument_sharpenFilter(float32 intensity)
 {
 	disableCurrentLayerRendering = true;
 	enableTempLayerRendering = true;
 
+	instrumentSettings.sharpen.intensity = intensity;
 	instrumentState.filter.outOfDate = true;
 	instrumentState.filter.apply = false;
 	currentInstrument = Instrument::SharpenFilter;
+
+	return instrumentSettings.sharpen;
 }
 
 void CanvasManager::updateInstrumentSettings()

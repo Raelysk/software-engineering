@@ -75,6 +75,11 @@ namespace Panter
 		uint32 radius;
 	};
 
+	struct SharpenFilterSettings
+	{
+		float32 intensity;
+	};
+
 	class CanvasManager : public XLib::NonCopyable
 	{
 	private: // meta
@@ -177,6 +182,7 @@ namespace Panter
 			ShapeSettings shape;
 			BrightnessContrastGammaFilterSettings brightnessContrastGamma;
 			GaussianBlurFilterSettings gaussianBlur;
+			SharpenFilterSettings sharpen;
 		} instrumentSettings;
 
 		union
@@ -246,7 +252,7 @@ namespace Panter
 
 		BrightnessContrastGammaFilterSettings&	setInstrument_brightnessContrastGammaFilter(float32 brightness = 0.0f, float32 contrast = 1.0f, float32 gamma = 1.0f);
 		GaussianBlurFilterSettings&				setInstrument_gaussianBlurFilter(uint32 radius = 8);
-		void									setInstrument_sharpenFilter();
+		SharpenFilterSettings&					setInstrument_sharpenFilter(float32 intensity = 1.0f);
 		void updateInstrumentSettings();
 		void applyInstrument();
 
@@ -278,6 +284,7 @@ namespace Panter
 		inline ShapeSettings&	getInstrumentSettings_shape() { return instrumentSettings.shape; }
 		inline BrightnessContrastGammaFilterSettings&	getInstrumentSettings_brightnessContrastGammaFilter() { return instrumentSettings.brightnessContrastGamma; }
 		inline GaussianBlurFilterSettings&				getInstrumentSettings_gaussianBlurFilter() { return instrumentSettings.gaussianBlur; }
+		inline SharpenFilterSettings&					getInstrumentSettings_sharpenFilter() { return instrumentSettings.sharpen; }
 
 		inline uint32x2 getCanvasSize() const { return canvasSize; }
 		inline uint32 getCanvasWidth() const { return canvasSize.x; }

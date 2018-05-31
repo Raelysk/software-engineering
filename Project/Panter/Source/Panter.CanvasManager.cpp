@@ -162,7 +162,7 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 				};
 
 				Settings settings;
-				settings.radius = min<uint32>(instrumentSettings.gaussianBlur.radius, 16);
+				settings.radius = clamp<uint32>(instrumentSettings.gaussianBlur.radius, 1, 16);
 				settings.multiplier = 1.0f / float32(sqr(settings.radius * 2 + 1));
 
 				updateInstrument_filter(blurEffect, settings);
@@ -170,8 +170,18 @@ void CanvasManager::updateAndDraw(RenderTarget& target, const rectu32& viewport)
 			}
 
 			case Instrument::SharpenFilter:
-				updateInstrument_filter(sharpenEffect);
+			{
+				struct Settings
+				{
+					float32 intensity;
+				};
+
+				Settings settings;
+				settings.intensity = saturate<float32>(instrumentSettings.sharpen.intensity);
+
+				updateInstrument_filter(sharpenEffect, settings);
 				break;
+			}
 
 			default:
 				Debug::Crash("invalid instrument");
