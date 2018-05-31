@@ -211,6 +211,7 @@ void Panter::MainWindow::openFile()
     if (!LoadImageFromFile(filename, imageData, width, height, format))
 		return;
 
+	canvasManager.resetInstrument();
     for (int i = canvasManager.getLayerCount() - 1; i > 0; --i)
 	{
         canvasManager.removeLayer(uint16(i));
